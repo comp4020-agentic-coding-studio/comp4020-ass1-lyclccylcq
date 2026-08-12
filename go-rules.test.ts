@@ -73,6 +73,42 @@ describe("getGroup", () => {
     );
   });
 
+  it("detects vertically connected stones as one group", () => {
+    let board = createBoard(9);
+    for (const point of [
+      { row: 4, col: 4 },
+      { row: 5, col: 4 },
+    ]) {
+      const result = placeStone(board, point, "black");
+      if (!result.ok) throw new Error("expected placement to succeed");
+      board = result.board;
+    }
+
+    const group = getGroup(board, { row: 4, col: 4 });
+    expect(group).toHaveLength(2);
+    expect(group).toEqual(
+      expect.arrayContaining([
+        { row: 4, col: 4 },
+        { row: 5, col: 4 },
+      ]),
+    );
+  });
+
+  it("does not connect stones that only touch diagonally", () => {
+    let board = createBoard(9);
+    const a: Point = { row: 3, col: 3 };
+    const b: Point = { row: 4, col: 4 };
+
+    for (const point of [a, b]) {
+      const result = placeStone(board, point, "black");
+      if (!result.ok) throw new Error("expected placement to succeed");
+      board = result.board;
+    }
+
+    expect(getGroup(board, a)).toEqual([a]);
+    expect(getGroup(board, b)).toEqual([b]);
+  });
+
   it("gives connected stones their shared liberties", () => {
     let board = createBoard(9);
     for (const point of [

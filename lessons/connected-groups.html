@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connected groups — Learn Go</title>
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <header>
+      <nav aria-label="Primary">
+        <a href="../">Home</a>
+        <a href="../contents.html">Contents</a>
+      </nav>
+    </header>
+    <main class="spread">
+      <div class="spread-text">
+        <h1>3. Connected groups</h1>
+        <p>
+          Stones of the same colour that touch orthogonally &mdash; sharing an
+          edge, not just a corner &mdash; form a single group. A group shares
+          its liberties, and it lives or dies together.
+        </p>
+        <p>
+          Work through three short boards: spot a group, tell it apart from
+          stones that only touch diagonally, then capture one.
+        </p>
+        <p id="stage-instruction" class="lesson-instruction"></p>
+      </div>
+      <div class="spread-board">
+        <div id="board"></div>
+        <p id="lesson-feedback" class="lesson-feedback" aria-live="polite"></p>
+        <div class="lesson-controls">
+          <button type="button" id="lesson-next" class="go-board-reset">Next</button>
+          <button type="button" id="lesson-reset" class="go-board-reset">Restart lesson</button>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="../connected-groups.ts"></script>
+  </body>
+</html>

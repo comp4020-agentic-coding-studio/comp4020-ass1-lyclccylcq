@@ -50,10 +50,14 @@ export function renderGoBoard(container: HTMLElement, options: RenderOptions): v
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
       const point: Point = { row, col };
+      const stone = board.cells[row][col];
+      svg.appendChild(pointCircle(point, stone, interactiveSet, onPointActivate));
       if (highlightSet.has(pointKey(point))) {
-        svg.appendChild(dot(col, row, 0.32, "go-board-highlight"));
+        // A highlighted stone gets a halo just outside it (an occupied point's
+        // fill would otherwise paint straight over a same-sized ring); a
+        // highlighted empty point keeps the smaller dot marker.
+        svg.appendChild(dot(col, row, stone ? 0.46 : 0.32, "go-board-highlight"));
       }
-      svg.appendChild(pointCircle(point, board.cells[row][col], interactiveSet, onPointActivate));
     }
   }
 
@@ -74,7 +78,7 @@ function pointCircle(
   if (stone) circle.classList.add(`go-board-point-${stone}`);
   describePoint(circle, point, stone);
 
-  const canActivate = stone === null && interactiveSet.has(pointKey(point));
+  const canActivate = interactiveSet.has(pointKey(point));
   if (canActivate && onPointActivate) {
     circle.classList.add("go-board-point-active");
     circle.setAttribute("role", "button");

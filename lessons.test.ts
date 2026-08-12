@@ -4,11 +4,12 @@
 // runs with no browser.
 
 import { describe, expect, it } from "vitest";
-import { getStone } from "./go-rules";
+import { getGroup, getStone } from "./go-rules";
 import { placingStonesLesson } from "./lesson-placing-stones";
 import { libertiesAndCaptureLesson, TARGET } from "./lesson-liberties-capture";
+import { connectedGroupsLesson, DISCOVER_GROUP } from "./lesson-connected-groups";
 
-const lessons = [placingStonesLesson, libertiesAndCaptureLesson];
+const lessons = [placingStonesLesson, libertiesAndCaptureLesson, connectedGroupsLesson];
 
 describe("lesson definitions", () => {
   it("Lesson 1 (placing stones) exists", () => {
@@ -19,6 +20,11 @@ describe("lesson definitions", () => {
   it("Lesson 2 (liberties and capture) exists", () => {
     expect(libertiesAndCaptureLesson.id).toBe("liberties-and-capture");
     expect(libertiesAndCaptureLesson.title).toBeTruthy();
+  });
+
+  it("Lesson 3 (connected groups) exists", () => {
+    expect(connectedGroupsLesson.id).toBe("connected-groups");
+    expect(connectedGroupsLesson.title).toBeTruthy();
   });
 
   it("every lesson has a distinct id and title", () => {
@@ -40,13 +46,30 @@ describe("lesson definitions", () => {
     expect(getStone(board, TARGET)).toBe("black");
   });
 
-  it("loading one lesson's initial state leaves the other lesson's definition untouched", () => {
+  it("Lesson 3 loads its own initial state: a small connected black group", () => {
+    const board = connectedGroupsLesson.createInitialBoard();
+    for (const point of DISCOVER_GROUP) {
+      expect(getStone(board, point)).toBe("black");
+    }
+    expect(getGroup(board, DISCOVER_GROUP[0])).toHaveLength(DISCOVER_GROUP.length);
+  });
+
+  it("loading one lesson's initial state leaves the other lessons' definitions untouched", () => {
     placingStonesLesson.createInitialBoard();
+    connectedGroupsLesson.createInitialBoard();
     const lesson2Board = libertiesAndCaptureLesson.createInitialBoard();
     expect(getStone(lesson2Board, TARGET)).toBe("black");
 
     libertiesAndCaptureLesson.createInitialBoard();
+    connectedGroupsLesson.createInitialBoard();
     const lesson1Board = placingStonesLesson.createInitialBoard();
     expect(getStone(lesson1Board, TARGET)).toBeNull();
+
+    placingStonesLesson.createInitialBoard();
+    libertiesAndCaptureLesson.createInitialBoard();
+    const lesson3Board = connectedGroupsLesson.createInitialBoard();
+    for (const point of DISCOVER_GROUP) {
+      expect(getStone(lesson3Board, point)).toBe("black");
+    }
   });
 });
