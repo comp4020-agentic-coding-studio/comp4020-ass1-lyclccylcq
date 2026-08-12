@@ -1,55 +1,64 @@
-// Controller for the liberties-and-capture lesson: owns a predefined board
-// position (one black stone, centre) and lets the learner place white stones
-// on nothing but its current liberties. go-rules.ts decides what's legal and
-// what gets captured; go-board.ts only draws whatever state it's given.
+// Bootstraps Lesson 1: click any empty point to place a stone, alternating
+// colours starting with black. Deliberately simple — no liberties, no
+// capture, no restriction on where a stone can go.
 
 import { renderGoBoard } from "./go-board";
-import { createBoard, getGroup, getLiberties, placeStone, type Board, type Point } from "./go-rules";
-
-const TARGET: Point = { row: 4, col: 4 };
+import { placeStone, type Board, type Point, type Stone } from "./go-rules";
+import { placingStonesLesson } from "./lesson-placing-stones";
 
 const boardEl = document.querySelector<HTMLDivElement>("#board");
 const feedbackEl = document.querySelector<HTMLParagraphElement>("#lesson-feedback");
-const retryButton = document.querySelector<HTMLButtonElement>("#lesson-retry");
+const resetButton = document.querySelector<HTMLButtonElement>("#lesson-reset");
 
-function startingPosition(): Board {
-  const board = createBoard(9);
-  board.cells[TARGET.row][TARGET.col] = "black";
-  return board;
+let board: Board = placingStonesLesson.createInitialBoard();
+let toPlay: Stone = "black";
+
+function opponent(stone: Stone): Stone {
+  return stone === "black" ? "white" : "black";
 }
 
-let board = startingPosition();
+function capitalise(stone: Stone): string {
+  return stone.charAt(0).toUpperCase() + stone.slice(1);
+}
+
+function emptyPoints(current: Board): Point[] {
+  const points: Point[] = [];
+  for (let row = 0; row < current.size; row++) {
+    for (let col = 0; col < current.size; col++) {
+      if (current.cells[row][col] === null) points.push({ row, col });
+    }
+  }
+  return points;
+}
 
 function render(): void {
   if (!boardEl) return;
-
-  const group = getGroup(board, TARGET);
-  const captured = group.length === 0;
-  const liberties = captured ? [] : getLiberties(board, group);
-
   renderGoBoard(boardEl, {
     board,
-    highlights: liberties,
-    interactive: liberties,
+    interactive: emptyPoints(board),
     onPointActivate: handleActivate,
   });
-
-  if (feedbackEl) {
-    feedbackEl.textContent = captured
-      ? "Captured! A group with zero liberties is removed from the board."
-      : `Liberties remaining: ${liberties.length}. Click a highlighted point to place white and take one away.`;
-  }
 }
 
 function handleActivate(point: Point): void {
-  const result = placeStone(board, point, "white");
+  const result = placeStone(board, point, toPlay);
   if (!result.ok) return;
+
   board = result.board;
+  if (feedbackEl) {
+    const played = toPlay;
+    toPlay = opponent(toPlay);
+    feedbackEl.textContent = `${capitalise(played)} placed a stone at row ${point.row + 1}, column ${point.col + 1}. ${capitalise(toPlay)}'s turn.`;
+  } else {
+    toPlay = opponent(toPlay);
+  }
   render();
 }
 
-retryButton?.addEventListener("click", () => {
-  board = startingPosition();
+resetButton?.addEventListener("click", () => {
+  board = placingStonesLesson.createInitialBoard();
+  toPlay = "black";
+  if (feedbackEl) feedbackEl.textContent = "";
   render();
 });
 

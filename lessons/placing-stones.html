@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Liberties and capture — Learn Go</title>
+    <title>Placing stones — Learn Go</title>
     <link rel="stylesheet" href="../styles.css" />
   </head>
   <body>
@@ -15,21 +15,26 @@
     </header>
     <main class="spread">
       <div class="spread-text">
-        <h1>1. Liberties and capture</h1>
+        <h1>1. Placing stones on intersections</h1>
         <p>
-          A stone survives only as long as it has liberties &mdash; empty
-          points touching it. The black stone below has four.
+          Go is played on the crossing points of a grid, not inside its
+          squares. A stone always sits on an intersection.
         </p>
         <p>
-          Place a white stone on each highlighted point to take a liberty
-          away. When the last one is gone, the black stone is captured and
-          removed from the board.
+          Try it: click any empty point on the board to place a stone.
+          Players alternate colours, starting with black, exactly as they
+          would across the table.
+        </p>
+        <p>
+          This board doesn't know the rest of the rules yet &mdash;
+          liberties, captures, and legality come in later chapters. For now
+          it only answers one question: where do stones go?
         </p>
       </div>
       <div class="spread-board">
         <div id="board"></div>
         <p id="lesson-feedback" class="lesson-feedback" aria-live="polite"></p>
-        <button type="button" id="lesson-retry" class="go-board-reset">Reset the position</button>
+        <button type="button" id="lesson-reset" class="go-board-reset">Clear board</button>
       </div>
     </main>
     <script type="module" src="../placing-stones.ts"></script>
