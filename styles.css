@@ -193,6 +193,14 @@ main.spread {
   outline: none;
 }
 
+/* Some engines apply a default focus ring on plain :focus rather than
+   waiting for :focus-visible's keyboard-only heuristic; suppress that too so
+   a clicked point never grows a native outline the size guessed for an SVG
+   shape with no CSS box. */
+.go-board-point:focus {
+  outline: none;
+}
+
 .go-board-point-black {
   fill: var(--stone-black);
   stroke: #000;

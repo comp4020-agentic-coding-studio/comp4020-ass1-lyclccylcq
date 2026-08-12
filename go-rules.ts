@@ -2,8 +2,7 @@
 // truth for what a legal position looks like, so lessons, the sandbox, and
 // later features can all build on it without re-deriving the rules.
 //
-// Deliberately not implemented yet: the suicide rule (a move may leave its
-// own group with zero liberties), ko, and territory scoring.
+// Deliberately not implemented yet: ko and territory scoring.
 
 export type Stone = "black" | "white";
 export type Cell = Stone | null;
@@ -96,13 +95,15 @@ export function getLiberties(board: Board, group: Point[]): Point[] {
 
 export type PlaceResult =
   | { ok: true; board: Board; captured: Point[] }
-  | { ok: false; reason: "occupied" | "off-board" };
+  | { ok: false; reason: "occupied" | "off-board" | "suicide" };
 
 /**
- * Places `colour` at `point`, then removes any opponent group left with zero
- * liberties. Does not check whether the move leaves the placed stone's own
- * group without liberties — the suicide rule is not implemented yet, so a
- * move like that is currently allowed and left on the board.
+ * Places `colour` at `point`, removes any opponent group left with zero
+ * liberties, then rejects the move as suicide if the placed stone's own
+ * group is still left with zero liberties — unless capturing opponent
+ * stones gave it one. A point emptied by an earlier capture is never
+ * permanently blocked: legality here is recomputed fresh from the board
+ * passed in, not from history.
  */
 export function placeStone(board: Board, point: Point, colour: Stone): PlaceResult {
   if (!isOnBoard(board, point)) return { ok: false, reason: "off-board" };
@@ -129,6 +130,11 @@ export function placeStone(board: Board, point: Point, colour: Stone): PlaceResu
         captured.push(stone);
       }
     }
+  }
+
+  const ownGroup = getGroup(next, point);
+  if (getLiberties(next, ownGroup).length === 0) {
+    return { ok: false, reason: "suicide" };
   }
 
   return { ok: true, board: next, captured };

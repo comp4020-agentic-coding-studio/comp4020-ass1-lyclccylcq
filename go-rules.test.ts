@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createBoard, getGroup, getLiberties, getStone, placeStone, type Point } from "./go-rules";
+import { cloneBoard, createBoard, getGroup, getLiberties, getStone, placeStone, type Point } from "./go-rules";
 
 describe("placeStone", () => {
   it("places a stone on an empty point", () => {
@@ -212,6 +212,118 @@ describe("captures", () => {
 
     expect(getStone(board, target)).toBeNull();
     expect(getStone(board, bystander)).toBe("black");
+  });
+});
+
+describe("move legality: the suicide rule", () => {
+  it("accepts a normal legal move", () => {
+    const board = createBoard(9);
+    const result = placeStone(board, { row: 4, col: 4 }, "black");
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects placing on an occupied point", () => {
+    const board = createBoard(9);
+    const first = placeStone(board, { row: 4, col: 4 }, "black");
+    if (!first.ok) throw new Error("expected placement to succeed");
+
+    const second = placeStone(first.board, { row: 4, col: 4 }, "white");
+    expect(second).toEqual({ ok: false, reason: "occupied" });
+  });
+
+  it("rejects a pure suicide move and leaves the board unchanged", () => {
+    let board = createBoard(9);
+    // Two lone white stones, each with its own liberty elsewhere, so
+    // neither is captured by black's attempt.
+    for (const point of [
+      { row: 0, col: 1 },
+      { row: 1, col: 0 },
+    ] as Point[]) {
+      const result = placeStone(board, point, "white");
+      if (!result.ok) throw new Error("expected placement to succeed");
+      board = result.board;
+    }
+
+    const before = cloneBoard(board);
+    const attempt = placeStone(board, { row: 0, col: 0 }, "black");
+
+    expect(attempt).toEqual({ ok: false, reason: "suicide" });
+    expect(board).toEqual(before);
+    expect(getStone(board, { row: 0, col: 0 })).toBeNull();
+  });
+
+  it("accepts a move that initially appears surrounded but captures an adjacent group", () => {
+    let board = createBoard(9);
+    // Two lone white stones whose only remaining liberty is the shared
+    // corner (0,0) — every neighbour of that point is occupied by white,
+    // so playing black there looks like suicide until captures resolve.
+    for (const point of [
+      { row: 1, col: 0 },
+      { row: 0, col: 1 },
+    ] as Point[]) {
+      const result = placeStone(board, point, "white");
+      if (!result.ok) throw new Error("expected placement to succeed");
+      board = result.board;
+    }
+    for (const point of [
+      { row: 2, col: 0 },
+      { row: 1, col: 1 },
+      { row: 0, col: 2 },
+    ] as Point[]) {
+      const result = placeStone(board, point, "black");
+      if (!result.ok) throw new Error("expected placement to succeed");
+      board = result.board;
+    }
+
+    const attempt = placeStone(board, { row: 0, col: 0 }, "black");
+    expect(attempt.ok).toBe(true);
+    if (!attempt.ok) return;
+    expect(attempt.captured).toEqual(
+      expect.arrayContaining([
+        { row: 1, col: 0 },
+        { row: 0, col: 1 },
+      ]),
+    );
+    expect(getStone(attempt.board, { row: 0, col: 0 })).toBe("black");
+  });
+
+  it("allows a previously captured point to be replayed once it has a liberty again", () => {
+    let board = createBoard(9);
+    const target: Point = { row: 4, col: 4 };
+
+    let result = placeStone(board, target, "black");
+    if (!result.ok) throw new Error("expected placement to succeed");
+    board = result.board;
+
+    for (const point of [
+      { row: 3, col: 4 },
+      { row: 5, col: 4 },
+      { row: 4, col: 3 },
+      { row: 4, col: 5 },
+    ] as Point[]) {
+      result = placeStone(board, point, "white");
+      if (!result.ok) throw new Error("expected placement to succeed");
+      board = result.board;
+    }
+    expect(getStone(board, target)).toBeNull();
+
+    // Surround the white stone at (4,5) too, leaving the emptied target
+    // point as its last liberty.
+    for (const point of [
+      { row: 3, col: 5 },
+      { row: 5, col: 5 },
+      { row: 4, col: 6 },
+    ] as Point[]) {
+      result = placeStone(board, point, "black");
+      if (!result.ok) throw new Error("expected placement to succeed");
+      board = result.board;
+    }
+
+    const replay = placeStone(board, target, "black");
+    expect(replay.ok).toBe(true);
+    if (!replay.ok) return;
+    expect(replay.captured).toEqual([{ row: 4, col: 5 }]);
+    expect(getStone(replay.board, target)).toBe("black");
   });
 });
 

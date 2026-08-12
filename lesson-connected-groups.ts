@@ -1,48 +1,64 @@
-import { createBoard, getGroup, type Board, type Point } from "./go-rules";
+// Three predefined black groups, each progressively less obvious, for Lesson
+// 3's capture examples. Every example runs the same sequence: the learner
+// selects the group (any stone in it), watches its shared liberties, then
+// plays white stones — checked by the shared rules engine — until the whole
+// group is captured together.
+
+import { createBoard, type Board, type Point } from "./go-rules";
 import type { LessonDefinition } from "./lesson";
 
-// Stage 1: a small connected black group, for the learner to select and see
-// light up as a whole.
-export const DISCOVER_GROUP: Point[] = [
-  { row: 3, col: 3 },
-  { row: 3, col: 4 },
-  { row: 4, col: 4 },
-];
-
-export function createDiscoverBoard(): Board {
-  const board = createBoard(9);
-  for (const point of DISCOVER_GROUP) board.cells[point.row][point.col] = "black";
-  return board;
-}
-
-// Stage 2: two black stones that touch only at a corner, to contrast with
-// stage 1 — selecting one must never select the other.
-export const DIAGONAL_A: Point = { row: 3, col: 3 };
-export const DIAGONAL_B: Point = { row: 4, col: 4 };
-
-export function createDiagonalBoard(): Board {
-  const board = createBoard(9);
-  board.cells[DIAGONAL_A.row][DIAGONAL_A.col] = "black";
-  board.cells[DIAGONAL_B.row][DIAGONAL_B.col] = "black";
-  return board;
-}
-
-// Stage 3: a small connected black group the learner surrounds with white,
-// to see the whole group captured together once its shared liberties run out.
-export const CAPTURE_GROUP: Point[] = [
+// Example 1: two connected stones. A minimal group, so surrounding it takes
+// only a handful of white moves — enough to show that connected stones share
+// liberties and fall together.
+export const EXAMPLE_1_GROUP: Point[] = [
   { row: 4, col: 4 },
   { row: 4, col: 5 },
 ];
 
-export function createCaptureBoard(): Board {
+export function createExample1Board(): Board {
   const board = createBoard(9);
-  for (const point of CAPTURE_GROUP) board.cells[point.row][point.col] = "black";
+  for (const point of EXAMPLE_1_GROUP) board.cells[point.row][point.col] = "black";
   return board;
+}
+
+// Example 2: a four-stone block. A different shape changes the liberty count
+// (eight, not six), reinforcing that shape — not just stone count — matters.
+export const EXAMPLE_2_GROUP: Point[] = [
+  { row: 1, col: 1 },
+  { row: 1, col: 2 },
+  { row: 2, col: 1 },
+  { row: 2, col: 2 },
+];
+
+export function createExample2Board(): Board {
+  const board = createBoard(9);
+  for (const point of EXAMPLE_2_GROUP) board.cells[point.row][point.col] = "black";
+  return board;
+}
+
+// Example 3: an L-shape against the board's edge. Being on the edge already
+// cuts its liberties down (five, for three stones), so the learner has to
+// actually look rather than assume every stone offers four escape routes.
+export const EXAMPLE_3_GROUP: Point[] = [
+  { row: 2, col: 8 },
+  { row: 3, col: 8 },
+  { row: 3, col: 7 },
+];
+
+export function createExample3Board(): Board {
+  const board = createBoard(9);
+  for (const point of EXAMPLE_3_GROUP) board.cells[point.row][point.col] = "black";
+  return board;
+}
+
+/** True once every point that used to hold `group` is empty again. */
+export function isGroupCaptured(board: Board, group: Point[]): boolean {
+  return group.every((point) => board.cells[point.row][point.col] === null);
 }
 
 export const connectedGroupsLesson: LessonDefinition = {
   id: "connected-groups",
   title: "Connected Groups",
-  createInitialBoard: createDiscoverBoard,
-  isComplete: (board) => getGroup(board, CAPTURE_GROUP[0]).length === 0,
+  createInitialBoard: createExample1Board,
+  isComplete: (board) => isGroupCaptured(board, EXAMPLE_1_GROUP),
 };
