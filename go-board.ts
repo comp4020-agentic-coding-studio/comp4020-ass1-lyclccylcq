@@ -1,23 +1,28 @@
-// A visual, interactive 9x9 Go board. It only knows how to place stones on
-// empty intersections and clear them — no liberties, captures, suicide, or
-// ko. Later lessons build those rules on top of (or beside) this component.
+// A visual, interactive 9x9 Go board. This module only renders: given a
+// board state (from go-rules.ts) it draws stones and, optionally, highlighted
+// points and a set of points that respond to activation. It has no opinion
+// about whose turn it is, what a legal move is, or what happens next — the
+// caller (a lesson, or later a free-play sandbox) owns that.
+
+import { pointKey, type Board, type Point } from "./go-rules";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const DEFAULT_SIZE = 9;
 
-type Stone = "black" | "white" | null;
-
-export interface GoBoardOptions {
-  size?: number;
+export interface RenderOptions {
+  board: Board;
+  /** Points to visually mark, e.g. a group's current liberties. */
+  highlights?: Point[];
+  /** Points that respond to click/keyboard activation. Omitted = none. */
+  interactive?: Point[];
+  onPointActivate?: (point: Point) => void;
 }
 
-export function createGoBoard(container: HTMLElement, options: GoBoardOptions = {}): void {
-  const size = options.size ?? DEFAULT_SIZE;
+export function renderGoBoard(container: HTMLElement, options: RenderOptions): void {
+  const { board, highlights = [], interactive = [], onPointActivate } = options;
+  const size = board.size;
   const last = size - 1;
-  const board: Stone[][] = Array.from({ length: size }, () =>
-    Array.from({ length: size }, (): Stone => null),
-  );
-  let toPlay: Stone = "black";
+  const interactiveSet = new Set(interactive.map(pointKey));
+  const highlightSet = new Set(highlights.map(pointKey));
 
   container.innerHTML = "";
   container.classList.add("go-board");
@@ -33,61 +38,58 @@ export function createGoBoard(container: HTMLElement, options: GoBoardOptions = 
   }
 
   for (const [x, y] of starPoints(size)) {
-    svg.appendChild(dot(x, y, "go-board-star"));
+    svg.appendChild(dot(x, y, 0.09, "go-board-star"));
   }
-
-  const points: SVGCircleElement[] = [];
 
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
-      svg.appendChild(dot(col, row, "go-board-hint"));
-
-      const point = document.createElementNS(SVG_NS, "circle");
-      point.setAttribute("cx", String(col));
-      point.setAttribute("cy", String(row));
-      point.setAttribute("r", "0.42");
-      point.setAttribute("role", "button");
-      point.setAttribute("tabindex", "0");
-      point.classList.add("go-board-point");
-      describePoint(point, row, col, null);
-
-      const place = (): void => {
-        if (board[row][col] !== null) return;
-        board[row][col] = toPlay;
-        point.classList.add(`go-board-point-${toPlay}`);
-        describePoint(point, row, col, toPlay);
-        toPlay = toPlay === "black" ? "white" : "black";
-      };
-
-      point.addEventListener("click", place);
-      point.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          place();
-        }
-      });
-
-      svg.appendChild(point);
-      points.push(point);
+      svg.appendChild(dot(col, row, 0.05, "go-board-hint"));
     }
   }
 
-  const reset = document.createElement("button");
-  reset.type = "button";
-  reset.textContent = "Clear board";
-  reset.classList.add("go-board-reset");
-  reset.addEventListener("click", () => {
-    toPlay = "black";
-    for (const row of board) row.fill(null);
-    points.forEach((point, index) => {
-      const row = Math.floor(index / size);
-      const col = index % size;
-      point.classList.remove("go-board-point-black", "go-board-point-white");
-      describePoint(point, row, col, null);
-    });
-  });
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const point: Point = { row, col };
+      if (highlightSet.has(pointKey(point))) {
+        svg.appendChild(dot(col, row, 0.32, "go-board-highlight"));
+      }
+      svg.appendChild(pointCircle(point, board.cells[row][col], interactiveSet, onPointActivate));
+    }
+  }
 
-  container.append(svg, reset);
+  container.append(svg);
+}
+
+function pointCircle(
+  point: Point,
+  stone: Board["cells"][number][number],
+  interactiveSet: Set<string>,
+  onPointActivate?: (point: Point) => void,
+): SVGCircleElement {
+  const circle = document.createElementNS(SVG_NS, "circle");
+  circle.setAttribute("cx", String(point.col));
+  circle.setAttribute("cy", String(point.row));
+  circle.setAttribute("r", "0.42");
+  circle.classList.add("go-board-point");
+  if (stone) circle.classList.add(`go-board-point-${stone}`);
+  describePoint(circle, point, stone);
+
+  const canActivate = stone === null && interactiveSet.has(pointKey(point));
+  if (canActivate && onPointActivate) {
+    circle.classList.add("go-board-point-active");
+    circle.setAttribute("role", "button");
+    circle.setAttribute("tabindex", "0");
+    const activate = (): void => onPointActivate(point);
+    circle.addEventListener("click", activate);
+    circle.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
+      }
+    });
+  }
+
+  return circle;
 }
 
 function gridLine(x1: number, y1: number, x2: number, y2: number): SVGLineElement {
@@ -100,11 +102,11 @@ function gridLine(x1: number, y1: number, x2: number, y2: number): SVGLineElemen
   return line;
 }
 
-function dot(x: number, y: number, className: string): SVGCircleElement {
+function dot(x: number, y: number, radius: number, className: string): SVGCircleElement {
   const circle = document.createElementNS(SVG_NS, "circle");
   circle.setAttribute("cx", String(x));
   circle.setAttribute("cy", String(y));
-  circle.setAttribute("r", className === "go-board-star" ? "0.09" : "0.05");
+  circle.setAttribute("r", String(radius));
   circle.setAttribute("aria-hidden", "true");
   circle.classList.add(className);
   return circle;
@@ -124,7 +126,11 @@ function starPoints(size: number): Array<[number, number]> {
   ];
 }
 
-function describePoint(point: SVGCircleElement, row: number, col: number, stone: Stone): void {
+function describePoint(
+  point: SVGCircleElement,
+  { row, col }: Point,
+  stone: Board["cells"][number][number],
+): void {
   const state = stone ? `${stone} stone` : "empty";
   point.setAttribute("aria-label", `Row ${row + 1}, column ${col + 1}: ${state}`);
 }

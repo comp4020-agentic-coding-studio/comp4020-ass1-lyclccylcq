@@ -120,6 +120,13 @@ main.spread {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1rem;
+}
+
+.lesson-feedback {
+  text-align: center;
+  min-height: 1.6em;
+  margin: 0;
 }
 
 /* Go board component */
@@ -153,13 +160,23 @@ main.spread {
   opacity: 0.35;
 }
 
+.go-board-highlight {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 0.05;
+  pointer-events: none;
+}
+
 .go-board-point {
   fill: transparent;
+}
+
+.go-board-point-active {
   cursor: pointer;
 }
 
-.go-board-point:hover,
-.go-board-point:focus-visible {
+.go-board-point-active:hover,
+.go-board-point-active:focus-visible {
   stroke: var(--accent);
   stroke-width: 0.03;
   outline: none;
