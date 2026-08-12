@@ -1,16 +1,187 @@
+:root {
+  color-scheme: light;
+
+  --paper: #f7f3ea;
+  --ink: #1a1a1a;
+  --accent: #7a3b12;
+  --rule: #d8cdb8;
+  --board-wood: #dcb35c;
+  --board-line: #3a2c14;
+  --stone-black: #1c1c1c;
+  --stone-white: #f5f5f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  padding: 2rem;
-  font-family: system-ui, sans-serif;
+  font-family: Georgia, "Times New Roman", serif;
   line-height: 1.6;
-  color: #1a1a1a;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+a {
+  color: var(--accent);
+}
+
+header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+nav[aria-label="Primary"] {
+  display: flex;
+  gap: 1rem;
 }
 
 main {
   max-width: 40rem;
   margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
 }
 
-a {
-  color: #0b5fff;
+/* Cover page */
+.cover {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.cover-tagline {
+  font-style: italic;
+  color: var(--accent);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.cover-enter {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.75rem;
+  border: 1px solid var(--ink);
+  border-radius: 0.25rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.cover-enter:hover {
+  background-color: var(--rule);
+}
+
+/* Contents */
+.contents-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.contents-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 0.25rem;
+}
+
+.lesson-status {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+/* Lesson spread: a two-page book layout on wide screens, a single readable
+   column on narrow ones rather than a shrunken spread. */
+main.spread {
+  max-width: 60rem;
+}
+
+.spread {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (width <= 47.99rem) {
+  .spread {
+    grid-template-columns: 1fr;
+  }
+}
+
+.spread-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Go board component */
+.go-board {
+  width: min(100%, 30rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.go-board-grid {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--board-wood);
+  border-radius: 0.25rem;
+  touch-action: manipulation;
+}
+
+.go-board-line {
+  stroke: var(--board-line);
+  stroke-width: 0.03;
+}
+
+.go-board-star {
+  fill: var(--board-line);
+}
+
+.go-board-hint {
+  fill: var(--board-line);
+  opacity: 0.35;
+}
+
+.go-board-point {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.go-board-point:hover,
+.go-board-point:focus-visible {
+  stroke: var(--accent);
+  stroke-width: 0.03;
+  outline: none;
+}
+
+.go-board-point-black {
+  fill: var(--stone-black);
+  stroke: #000;
+  stroke-width: 0.02;
+}
+
+.go-board-point-white {
+  fill: var(--stone-white);
+  stroke: #000;
+  stroke-width: 0.02;
+}
+
+.go-board-reset {
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 0.25rem;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
 }
