@@ -17,8 +17,18 @@ import {
   createExample3Board,
   isGroupCaptured,
 } from "./lesson-connected-groups";
+import {
+  CAPTURE_BLACK,
+  CAPTURE_TARGET,
+  CAPTURE_WHITE,
+  SUICIDE_TARGET,
+  SUICIDE_WHITE,
+  createCaptureExampleBoard,
+  createSuicideExampleBoard,
+  illegalMovesLesson,
+} from "./lesson-illegal-moves";
 
-const lessons = [placingStonesLesson, libertiesAndCaptureLesson, connectedGroupsLesson];
+const lessons = [placingStonesLesson, libertiesAndCaptureLesson, connectedGroupsLesson, illegalMovesLesson];
 const examples = [
   { group: EXAMPLE_1_GROUP, createBoard: createExample1Board },
   { group: EXAMPLE_2_GROUP, createBoard: createExample2Board },
@@ -39,6 +49,11 @@ describe("lesson definitions", () => {
   it("Lesson 3 (connected groups) exists", () => {
     expect(connectedGroupsLesson.id).toBe("connected-groups");
     expect(connectedGroupsLesson.title).toBeTruthy();
+  });
+
+  it("Lesson 4 (illegal moves) exists", () => {
+    expect(illegalMovesLesson.id).toBe("illegal-moves");
+    expect(illegalMovesLesson.title).toBeTruthy();
   });
 
   it("every lesson has a distinct id and title", () => {
@@ -66,6 +81,14 @@ describe("lesson definitions", () => {
       expect(getStone(board, point)).toBe("black");
     }
     expect(getGroup(board, EXAMPLE_1_GROUP[0])).toHaveLength(EXAMPLE_1_GROUP.length);
+  });
+
+  it("Lesson 4 loads its own initial state: a point fully surrounded by White, still empty", () => {
+    const board = illegalMovesLesson.createInitialBoard();
+    for (const point of SUICIDE_WHITE) {
+      expect(getStone(board, point)).toBe("white");
+    }
+    expect(getStone(board, SUICIDE_TARGET)).toBeNull();
   });
 
   it("loading one lesson's initial state leaves the other lessons' definitions untouched", () => {
@@ -177,5 +200,61 @@ describe("Lesson 3's three capture examples", () => {
     const result = placeStone(board, EXAMPLE_1_GROUP[0], "white");
     expect(result).toEqual({ ok: false, reason: "occupied" });
     expect(board).toEqual(before);
+  });
+});
+
+describe("Lesson 4's two illegal-move examples", () => {
+  it("example 1 starts unsolved: the surrounded point is empty and untouched", () => {
+    const board = createSuicideExampleBoard();
+    expect(getStone(board, SUICIDE_TARGET)).toBeNull();
+    for (const point of SUICIDE_WHITE) expect(getStone(board, point)).toBe("white");
+  });
+
+  it("does not reveal the illegal point in advance: every White stone there still has its own other liberty", () => {
+    const board = createSuicideExampleBoard();
+    // If any of these White stones were already at zero liberties elsewhere,
+    // the position would be pre-decided rather than something the learner
+    // has to actually try.
+    for (const point of SUICIDE_WHITE) {
+      expect(getLiberties(board, getGroup(board, point)).length).toBeGreaterThan(0);
+    }
+  });
+
+  it("attempting the suicide move is rejected by the shared rules engine and leaves the board unchanged", () => {
+    const board = createSuicideExampleBoard();
+    const before = JSON.parse(JSON.stringify(board));
+
+    const attempt = placeStone(board, SUICIDE_TARGET, "black");
+    expect(attempt).toEqual({ ok: false, reason: "suicide" });
+    expect(board).toEqual(before);
+    expect(getStone(board, SUICIDE_TARGET)).toBeNull();
+  });
+
+  it("example 2 starts unsolved: the corner point is empty, White and Black are in place", () => {
+    const board = createCaptureExampleBoard();
+    expect(getStone(board, CAPTURE_TARGET)).toBeNull();
+    for (const point of CAPTURE_WHITE) expect(getStone(board, point)).toBe("white");
+    for (const point of CAPTURE_BLACK) expect(getStone(board, point)).toBe("black");
+  });
+
+  it("the legal capturing move completes example 2: White is removed, Black remains with liberties", () => {
+    const board = createCaptureExampleBoard();
+    const attempt = placeStone(board, CAPTURE_TARGET, "black");
+
+    expect(attempt.ok).toBe(true);
+    if (!attempt.ok) return;
+    expect(attempt.captured).toEqual(expect.arrayContaining(CAPTURE_WHITE));
+    for (const point of CAPTURE_WHITE) {
+      expect(getStone(attempt.board, point)).toBeNull();
+    }
+    expect(getStone(attempt.board, CAPTURE_TARGET)).toBe("black");
+    expect(getLiberties(attempt.board, getGroup(attempt.board, CAPTURE_TARGET)).length).toBeGreaterThan(0);
+    expect(illegalMovesLesson.isComplete?.(attempt.board)).toBe(true);
+  });
+
+  it("occupied intersections are still rejected separately from suicide", () => {
+    const board = createSuicideExampleBoard();
+    const result = placeStone(board, SUICIDE_WHITE[0], "black");
+    expect(result).toEqual({ ok: false, reason: "occupied" });
   });
 });
