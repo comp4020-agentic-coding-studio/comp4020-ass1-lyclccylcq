@@ -6,6 +6,7 @@
 import { renderGoBoard } from "./go-board";
 import { getGroup, getLiberties, placeStone, type Board, type Point } from "./go-rules";
 import { libertiesAndCaptureLesson, TARGET } from "./lesson-liberties-capture";
+import { markComplete } from "./lesson-progress";
 
 const boardEl = document.querySelector<HTMLDivElement>("#board");
 const feedbackEl = document.querySelector<HTMLParagraphElement>("#lesson-feedback");
@@ -17,6 +18,7 @@ function render(): void {
   if (!boardEl) return;
 
   const captured = libertiesAndCaptureLesson.isComplete?.(board) ?? false;
+  if (captured) markComplete(libertiesAndCaptureLesson.id);
   const liberties = captured ? [] : getLiberties(board, getGroup(board, TARGET));
 
   renderGoBoard(boardEl, {

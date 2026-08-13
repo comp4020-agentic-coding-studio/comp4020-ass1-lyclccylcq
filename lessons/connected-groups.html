@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Connected groups — Learn Go</title>
     <link rel="stylesheet" href="../styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
   </head>
   <body>
     <header>
@@ -15,6 +28,7 @@
     </header>
     <main class="spread">
       <div class="spread-text">
+        <p class="chapter-kicker">第三章 · 棋块</p>
         <h1>3. Connected groups</h1>
         <p>
           Stones of the same colour that touch orthogonally &mdash; sharing an
@@ -27,6 +41,11 @@
           liberties, then place white stones yourself until nothing is left.
         </p>
         <p id="stage-instruction" class="lesson-instruction"></p>
+        <p class="chapter-transition">
+          Connected stones share their liberties and live or die together.
+          If liberties decide whether stones live, can you place a stone
+          where it has none?
+        </p>
       </div>
       <div class="spread-board">
         <div id="board"></div>
@@ -37,6 +56,13 @@
         </div>
       </div>
     </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
     <script type="module" src="../connected-groups.ts"></script>
+    <script type="module">
+      import { mount } from "../book-nav.ts";
+      mount("connected-groups", document.querySelector("#book-nav"));
+    </script>
   </body>
 </html>

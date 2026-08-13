@@ -13,7 +13,9 @@ import {
   SUICIDE_TARGET,
   createCaptureExampleBoard,
   createSuicideExampleBoard,
+  illegalMovesLesson,
 } from "./lesson-illegal-moves";
+import { markComplete } from "./lesson-progress";
 
 interface Example {
   createBoard: () => Board;
@@ -76,6 +78,7 @@ export function mount(elements: LessonElements): void {
     const isSuicideExample = exampleIndex === 0;
     const isLastExample = exampleIndex === EXAMPLES.length - 1;
     const done = isSuicideExample ? attempted : solved;
+    if (isLastExample && solved) markComplete(illegalMovesLesson.id);
 
     const group = selected ? getGroup(board, selected) : [];
     const liberties = group.length > 0 ? getLiberties(board, group) : [];

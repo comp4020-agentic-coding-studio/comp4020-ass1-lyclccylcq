@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Placing stones — Learn Go</title>
     <link rel="stylesheet" href="../styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
   </head>
   <body>
     <header>
@@ -15,6 +28,7 @@
     </header>
     <main class="spread">
       <div class="spread-text">
+        <p class="chapter-kicker">第一章 · 着子</p>
         <h1>1. Placing stones on intersections</h1>
         <p>
           Go is played on the crossing points of a grid, not inside its
@@ -30,6 +44,10 @@
           liberties, captures, and legality come in later chapters. For now
           it only answers one question: where do stones go?
         </p>
+        <p class="chapter-transition">
+          Go begins with one simple action: place a stone on an
+          intersection. But once a stone is placed, what keeps it alive?
+        </p>
       </div>
       <div class="spread-board">
         <div id="board"></div>
@@ -37,6 +55,13 @@
         <button type="button" id="lesson-reset" class="go-board-reset">Clear board</button>
       </div>
     </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
     <script type="module" src="../placing-stones.ts"></script>
+    <script type="module">
+      import { mount } from "../book-nav.ts";
+      mount("placing-stones", document.querySelector("#book-nav"));
+    </script>
   </body>
 </html>

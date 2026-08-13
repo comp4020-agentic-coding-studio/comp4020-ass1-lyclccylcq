@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contents — Learn Go</title>
     <link rel="stylesheet" href="./styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
   </head>
   <body>
     <header>
@@ -17,16 +30,31 @@
       <h1>Contents</h1>
       <ol class="contents-list">
         <li>
-          <a href="./lessons/placing-stones.html">1. Placing a stone</a>
+          <div class="contents-entry">
+            <span class="chapter-kicker">第一章 · 着子</span>
+            <a href="./lessons/placing-stones.html">1. Placing a stone</a>
+          </div>
         </li>
         <li>
-          <a href="./lessons/liberties-and-capture.html">2. Liberties and capture</a>
+          <div class="contents-entry">
+            <span class="chapter-kicker">第二章 · 气</span>
+            <a href="./lessons/liberties-and-capture.html">2. Liberties and capture</a>
+          </div>
+          <span data-status-for="liberties-and-capture"></span>
         </li>
         <li>
-          <a href="./lessons/connected-groups.html">3. Connected groups</a>
+          <div class="contents-entry">
+            <span class="chapter-kicker">第三章 · 棋块</span>
+            <a href="./lessons/connected-groups.html">3. Connected groups</a>
+          </div>
+          <span data-status-for="connected-groups"></span>
         </li>
         <li>
-          <a href="./lessons/illegal-moves.html">4. Illegal moves: suicide</a>
+          <div class="contents-entry">
+            <span class="chapter-kicker">第四章 · 禁着</span>
+            <a href="./lessons/illegal-moves.html">4. Illegal moves: suicide</a>
+          </div>
+          <span data-status-for="illegal-moves"></span>
         </li>
         <li>
           <span>5. Ko</span>
@@ -38,5 +66,17 @@
         </li>
       </ol>
     </main>
+    <script type="module">
+      import { isChapterComplete } from "./lesson-progress.ts";
+
+      for (const id of ["liberties-and-capture", "connected-groups", "illegal-moves"]) {
+        if (!isChapterComplete(id)) continue;
+        const status = document.querySelector(`[data-status-for="${id}"]`);
+        if (!status) continue;
+        status.textContent = "✓";
+        status.classList.add("chapter-done");
+        status.setAttribute("aria-label", "Completed");
+      }
+    </script>
   </body>
 </html>

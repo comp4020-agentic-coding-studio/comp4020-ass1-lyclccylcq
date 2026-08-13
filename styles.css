@@ -5,10 +5,18 @@
   --ink: #1a1a1a;
   --accent: #7a3b12;
   --rule: #d8cdb8;
+  --seal: #9a2c2c;
   --board-wood: #dcb35c;
   --board-line: #3a2c14;
   --stone-black: #1c1c1c;
   --stone-white: #f5f5f0;
+}
+
+/* Cross-document page turns (§4): opt in to the platform's View Transitions
+   API instead of a page-flip dependency. Unsupported browsers just navigate
+   normally, so this needs no feature detection or fallback code. */
+@view-transition {
+  navigation: auto;
 }
 
 * {
@@ -17,7 +25,11 @@
 
 body {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+
+  /* Georgia/Times cover Latin text; the CJK fallbacks only ever get used for
+     the chapter kickers' Chinese characters, which those fonts have no
+     glyphs for. */
+  font-family: Georgia, "Times New Roman", "Songti SC", "Noto Serif SC", serif;
   line-height: 1.6;
   color: var(--ink);
   background: var(--paper);
@@ -30,6 +42,7 @@ a {
 header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--rule);
+  view-transition-name: book-header;
 }
 
 nav[aria-label="Primary"] {
@@ -41,6 +54,7 @@ main {
   max-width: 40rem;
   margin: 0 auto;
   padding: 2rem 1.5rem 3rem;
+  view-transition-name: book-page;
 }
 
 /* Cover page */
@@ -52,6 +66,13 @@ main {
   justify-content: center;
   text-align: center;
   gap: 1rem;
+}
+
+.cover-kicker {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  color: var(--accent);
 }
 
 .cover-tagline {
@@ -86,15 +107,56 @@ main {
 .contents-list li {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
   border: 1px solid var(--rule);
   border-radius: 0.25rem;
 }
 
+.contents-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
 .lesson-status {
   color: var(--accent);
   font-size: 0.9rem;
+}
+
+/* Chapter numbering, shared by the contents list and every chapter page. A
+   <p>, never a heading, so each page keeps exactly one <h1>. */
+.chapter-kicker {
+  margin: 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-style: normal;
+}
+
+/* The one or two sentences linking a chapter to the next (§7): visually
+   set apart from the lesson's own explanatory text, not just another <p>. */
+.chapter-transition {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-style: italic;
+}
+
+/* A red seal/stamp accent for a completed chapter — text-based, so there's
+   no image or alt-text to manage. */
+.chapter-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 1px solid var(--seal);
+  border-radius: 50%;
+  color: var(--seal);
+  font-size: 0.75rem;
+  line-height: 1;
 }
 
 /* Lesson spread: a two-page book layout on wide screens, a single readable
@@ -138,6 +200,56 @@ main.spread {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.75rem;
+}
+
+/* Page-turn footer (§4/§8): Previous/Next book-nav links shared by the four
+   chapter pages and the closing page, rendered by book-nav.ts. */
+.book-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+.book-nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--rule);
+  border-radius: 0.25rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.book-nav-link:hover {
+  background-color: var(--rule);
+}
+
+/* Closing page */
+.closing {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.closing-seal {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  border: 2px solid var(--seal);
+  border-radius: 50%;
+  color: var(--seal);
+  font-size: 1.5rem;
 }
 
 /* Go board component */
@@ -220,4 +332,78 @@ main.spread {
   background: var(--paper);
   color: var(--ink);
   cursor: pointer;
+}
+
+/* Page-turn transition (§4). The header keeps its own transition-name but no
+   custom animation, so identical header markup just swaps instantly instead
+   of visibly crossfading. */
+::view-transition-old(book-header),
+::view-transition-new(book-header) {
+  animation: none;
+}
+
+/* A direct jump (contents list, header nav, the cover) never tags a
+   direction, so it keeps the browser's default crossfade — just shortened,
+   per §8's "direct contents navigation may use a shorter transition." */
+html:not([data-turn]) ::view-transition-old(book-page),
+html:not([data-turn]) ::view-transition-new(book-page) {
+  animation-duration: 120ms;
+}
+
+/* Sequential Prev/Next (§4): a short rotate + slide standing in for a page
+   turning forward or back. Chosen over a page-flip library because this is
+   plain CSS with no runtime dependency at all. */
+html[data-turn="next"]::view-transition-old(book-page) {
+  animation: book-page-out-next 220ms ease-in both;
+}
+
+html[data-turn="next"]::view-transition-new(book-page) {
+  animation: book-page-in-next 220ms ease-out both;
+}
+
+html[data-turn="prev"]::view-transition-old(book-page) {
+  animation: book-page-out-prev 220ms ease-in both;
+}
+
+html[data-turn="prev"]::view-transition-new(book-page) {
+  animation: book-page-in-prev 220ms ease-out both;
+}
+
+@keyframes book-page-out-next {
+  to {
+    transform: rotateY(-8deg) translateX(-6%);
+    opacity: 0;
+  }
+}
+
+@keyframes book-page-in-next {
+  from {
+    transform: rotateY(8deg) translateX(6%);
+    opacity: 0;
+  }
+}
+
+@keyframes book-page-out-prev {
+  to {
+    transform: rotateY(8deg) translateX(6%);
+    opacity: 0;
+  }
+}
+
+@keyframes book-page-in-prev {
+  from {
+    transform: rotateY(-8deg) translateX(-6%);
+    opacity: 0;
+  }
+}
+
+/* §6: reduced motion keeps a transition (so the incoming page isn't a jarring
+   pop-in) but drops the physical rotate/slide for a near-instant fade. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+  }
 }

@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Liberties and capture — Learn Go</title>
     <link rel="stylesheet" href="../styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
   </head>
   <body>
     <header>
@@ -15,6 +28,7 @@
     </header>
     <main class="spread">
       <div class="spread-text">
+        <p class="chapter-kicker">第二章 · 气</p>
         <h1>2. Liberties and capture</h1>
         <p>
           A stone survives only as long as it has liberties &mdash; empty
@@ -25,6 +39,10 @@
           away. When the last one is gone, the black stone is captured and
           removed from the board.
         </p>
+        <p class="chapter-transition">
+          Every stone needs open neighbouring intersections &mdash;
+          liberties. A stone does not always stand alone.
+        </p>
       </div>
       <div class="spread-board">
         <div id="board"></div>
@@ -32,6 +50,13 @@
         <button type="button" id="lesson-retry" class="go-board-reset">Reset the position</button>
       </div>
     </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
     <script type="module" src="../liberties-and-capture.ts"></script>
+    <script type="module">
+      import { mount } from "../book-nav.ts";
+      mount("liberties-and-capture", document.querySelector("#book-nav"));
+    </script>
   </body>
 </html>

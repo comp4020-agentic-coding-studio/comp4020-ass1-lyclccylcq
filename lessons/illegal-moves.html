@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Illegal moves — Learn Go</title>
     <link rel="stylesheet" href="../styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
   </head>
   <body>
     <header>
@@ -15,6 +28,7 @@
     </header>
     <main class="spread">
       <div class="spread-text">
+        <p class="chapter-kicker">第四章 · 禁着</p>
         <h1>4. Illegal moves: suicide</h1>
         <p>
           A stone can't be played if it (or its whole group) would end up
@@ -27,6 +41,12 @@
           happens.
         </p>
         <p id="stage-instruction" class="lesson-instruction"></p>
+        <p class="chapter-transition">
+          A move with no resulting liberties is illegal &mdash; unless the
+          move captures first. That's every rule this book covers: where
+          stones go, what keeps them alive, how groups share liberties, and
+          when a move is illegal.
+        </p>
       </div>
       <div class="spread-board">
         <div id="board"></div>
@@ -37,6 +57,13 @@
         </div>
       </div>
     </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
     <script type="module" src="../illegal-moves.ts"></script>
+    <script type="module">
+      import { mount } from "../book-nav.ts";
+      mount("illegal-moves", document.querySelector("#book-nav"));
+    </script>
   </body>
 </html>

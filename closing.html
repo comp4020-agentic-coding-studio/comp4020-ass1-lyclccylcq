@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Learn Go: an interactive rulebook</title>
+    <title>Closing — Learn Go</title>
     <link rel="stylesheet" href="./styles.css" />
     <script>
       (function () {
@@ -26,16 +26,26 @@
         <a href="./contents.html">Contents</a>
       </nav>
     </header>
-    <main class="cover">
-      <p class="cover-kicker">開卷 · Begin</p>
-      <h1>Learn Go</h1>
-      <p class="cover-tagline">Learn Go by playing, not reading.</p>
+    <main class="closing">
+      <p class="chapter-kicker">終 · 结语</p>
+      <div class="closing-seal" aria-hidden="true">終</div>
+      <h1>You've finished the book</h1>
       <p>
-        A short, interactive rulebook for the board game Go. Each chapter
-        teaches one rule on a real 9&times;9 board &mdash; place a stone and
-        see the rule for yourself, rather than reading about it.
+        Four rules, one board: stones go on intersections, liberties keep
+        them alive, connected stones share those liberties, and a move that
+        leaves none is illegal &mdash; unless it captures first.
       </p>
-      <a class="cover-enter" href="./contents.html">Open the book</a>
+      <p>
+        <a href="./contents.html">Return to the contents</a> to revisit any
+        chapter, or <a href="./">go back to the cover</a>.
+      </p>
     </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
+    <script type="module">
+      import { mount } from "./book-nav.ts";
+      mount("closing", document.querySelector("#book-nav"));
+    </script>
   </body>
 </html>

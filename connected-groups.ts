@@ -8,6 +8,7 @@
 import { renderGoBoard } from "./go-board";
 import { getGroup, getLiberties, getStone, placeStone, type Board, type Point } from "./go-rules";
 import {
+  connectedGroupsLesson,
   createExample1Board,
   createExample2Board,
   createExample3Board,
@@ -16,6 +17,7 @@ import {
   EXAMPLE_3_GROUP,
   isGroupCaptured,
 } from "./lesson-connected-groups";
+import { markComplete } from "./lesson-progress";
 
 interface Example {
   createBoard: () => Board;
@@ -91,6 +93,7 @@ export function mount(elements: LessonElements): void {
     const example = EXAMPLES[exampleIndex];
     const captured = isGroupCaptured(board, example.group);
     const isLastExample = exampleIndex === EXAMPLES.length - 1;
+    if (captured && isLastExample) markComplete(connectedGroupsLesson.id);
 
     const group = selected ? getGroup(board, selected) : [];
     const liberties = group.length > 0 ? getLiberties(board, group) : [];
