@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cloneBoard, createBoard, getGroup, getLiberties, getStone, placeStone, type Point } from "./go-rules";
+import { cloneBoard, createBoard, getGroup, getLiberties, getStone, placeStone, type Board, type Point } from "./go-rules";
 
 describe("placeStone", () => {
   it("places a stone on an empty point", () => {
@@ -351,5 +351,109 @@ describe("the liberties lesson's move sequence", () => {
     }
 
     expect(getStone(board, target)).toBeNull();
+  });
+});
+
+describe("simple ko", () => {
+  // The smallest shape that demonstrates ko: a lone White stone (KO_POINT)
+  // with one liberty (CAPTURE_POINT), backed up by three more White stones
+  // so that once Black captures it, White retaking KO_POINT would legally
+  // capture that Black stone right back — except doing so recreates the
+  // exact position from before Black's capture, which the ko rule forbids.
+  const KO_POINT: Point = { row: 4, col: 4 };
+  const CAPTURE_POINT: Point = { row: 5, col: 4 };
+  const ELSEWHERE_POINT: Point = { row: 0, col: 8 };
+
+  function createKoPosition(): Board {
+    const board = createBoard(9);
+    for (const point of [KO_POINT, { row: 6, col: 4 }, { row: 5, col: 3 }, { row: 5, col: 5 }]) {
+      board.cells[point.row][point.col] = "white";
+    }
+    for (const point of [
+      { row: 3, col: 4 },
+      { row: 4, col: 3 },
+      { row: 4, col: 5 },
+    ]) {
+      board.cells[point.row][point.col] = "black";
+    }
+    return board;
+  }
+
+  it("captures normally when no ko board is supplied", () => {
+    const board = createKoPosition();
+    const result = placeStone(board, CAPTURE_POINT, "black");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.captured).toEqual([KO_POINT]);
+    expect(getStone(result.board, KO_POINT)).toBeNull();
+  });
+
+  it("rejects an immediate recapture that would recreate the position from before the opponent's last move", () => {
+    const before = createKoPosition();
+    const afterCapture = placeStone(before, CAPTURE_POINT, "black");
+    if (!afterCapture.ok) throw new Error("expected capture to succeed");
+
+    const recapture = placeStone(afterCapture.board, KO_POINT, "white", before);
+    expect(recapture).toEqual({ ok: false, reason: "ko" });
+  });
+
+  it("leaves the board unchanged when a move is rejected as ko", () => {
+    const before = createKoPosition();
+    const afterCapture = placeStone(before, CAPTURE_POINT, "black");
+    if (!afterCapture.ok) throw new Error("expected capture to succeed");
+    const boardBeforeAttempt = cloneBoard(afterCapture.board);
+
+    placeStone(afterCapture.board, KO_POINT, "white", before);
+    expect(afterCapture.board).toEqual(boardBeforeAttempt);
+  });
+
+  it("is distinguishable from suicide: the same move is legal without the ko check", () => {
+    const before = createKoPosition();
+    const afterCapture = placeStone(before, CAPTURE_POINT, "black");
+    if (!afterCapture.ok) throw new Error("expected capture to succeed");
+
+    const withoutKoCheck = placeStone(afterCapture.board, KO_POINT, "white");
+    expect(withoutKoCheck.ok).toBe(true);
+
+    const withKoCheck = placeStone(afterCapture.board, KO_POINT, "white", before);
+    expect(withKoCheck).toEqual({ ok: false, reason: "ko" });
+  });
+
+  it("no longer applies once a different move has been played in between (simple ko, not superko)", () => {
+    const before = createKoPosition();
+    const afterCapture = placeStone(before, CAPTURE_POINT, "black");
+    if (!afterCapture.ok) throw new Error("expected capture to succeed");
+
+    const blocked = placeStone(afterCapture.board, KO_POINT, "white", before);
+    expect(blocked).toEqual({ ok: false, reason: "ko" });
+
+    // Playing elsewhere changes what "the position before the opponent's
+    // last move" means for the next attempt at KO_POINT.
+    const elsewhere = placeStone(afterCapture.board, ELSEWHERE_POINT, "white", before);
+    if (!elsewhere.ok) throw new Error("expected the elsewhere move to succeed");
+
+    const retake = placeStone(elsewhere.board, KO_POINT, "white", afterCapture.board);
+    expect(retake.ok).toBe(true);
+    if (!retake.ok) return;
+    expect(retake.captured).toEqual([CAPTURE_POINT]);
+    expect(getStone(retake.board, KO_POINT)).toBe("white");
+  });
+
+  it("occupied and suicide validation still work alongside the ko check", () => {
+    const board = createKoPosition();
+    expect(placeStone(board, KO_POINT, "black")).toEqual({ ok: false, reason: "occupied" });
+
+    let suicideBoard = createBoard(9);
+    for (const point of [
+      { row: 3, col: 4 },
+      { row: 5, col: 4 },
+      { row: 4, col: 3 },
+      { row: 4, col: 5 },
+    ] as Point[]) {
+      const placed = placeStone(suicideBoard, point, "white");
+      if (!placed.ok) throw new Error("expected placement to succeed");
+      suicideBoard = placed.board;
+    }
+    expect(placeStone(suicideBoard, { row: 4, col: 4 }, "black")).toEqual({ ok: false, reason: "suicide" });
   });
 });

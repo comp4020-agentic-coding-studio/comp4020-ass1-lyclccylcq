@@ -38,6 +38,12 @@ export const BOOK_PAGES: BookPage[] = [
     chapterKicker: "第四章 · 禁着",
     title: "Illegal Moves",
   },
+  {
+    id: "ko",
+    path: "lessons/ko.html",
+    chapterKicker: "第五章 · 劫",
+    title: "Ko",
+  },
   { id: "closing", path: "closing.html", title: "Closing" },
 ];
 

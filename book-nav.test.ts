@@ -14,7 +14,7 @@ describe("getAdjacent", () => {
 
   it("the closing page has no next page", () => {
     expect(getAdjacent("closing").next).toBeNull();
-    expect(getAdjacent("closing").prev?.id).toBe("illegal-moves");
+    expect(getAdjacent("closing").prev?.id).toBe("ko");
   });
 
   it("a middle chapter's neighbours are the chapters either side of it", () => {

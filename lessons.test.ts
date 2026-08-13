@@ -27,8 +27,15 @@ import {
   createSuicideExampleBoard,
   illegalMovesLesson,
 } from "./lesson-illegal-moves";
+import { CAPTURE_POINT, KO_POINT, koLesson } from "./lesson-ko";
 
-const lessons = [placingStonesLesson, libertiesAndCaptureLesson, connectedGroupsLesson, illegalMovesLesson];
+const lessons = [
+  placingStonesLesson,
+  libertiesAndCaptureLesson,
+  connectedGroupsLesson,
+  illegalMovesLesson,
+  koLesson,
+];
 const examples = [
   { group: EXAMPLE_1_GROUP, createBoard: createExample1Board },
   { group: EXAMPLE_2_GROUP, createBoard: createExample2Board },
@@ -89,6 +96,17 @@ describe("lesson definitions", () => {
       expect(getStone(board, point)).toBe("white");
     }
     expect(getStone(board, SUICIDE_TARGET)).toBeNull();
+  });
+
+  it("Lesson 5 (ko) exists", () => {
+    expect(koLesson.id).toBe("ko");
+    expect(koLesson.title).toBeTruthy();
+  });
+
+  it("Lesson 5 loads its own initial state: a lone White stone with one liberty", () => {
+    const board = koLesson.createInitialBoard();
+    expect(getStone(board, KO_POINT)).toBe("white");
+    expect(getStone(board, CAPTURE_POINT)).toBeNull();
   });
 
   it("loading one lesson's initial state leaves the other lessons' definitions untouched", () => {

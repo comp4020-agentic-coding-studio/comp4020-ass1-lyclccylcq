@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ko — Learn Go</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <header>
+      <nav aria-label="Primary">
+        <a href="../">Home</a>
+        <a href="../contents.html">Contents</a>
+      </nav>
+    </header>
+    <main class="spread">
+      <div class="spread-text">
+        <p class="chapter-kicker">第五章 · 劫</p>
+        <h1>5. Ko</h1>
+        <p>
+          Legal moves can still create another problem: two players might
+          capture the same stone forever.
+        </p>
+        <p>
+          A player cannot immediately make a move that recreates the board
+          position from immediately before the opponent's last move. This is
+          called the ko rule.
+        </p>
+        <p>
+          Below, White's lone stone has just one liberty. Capture it with
+          Black, then see what happens when you try to take it straight back.
+        </p>
+        <p id="stage-instruction" class="lesson-instruction"></p>
+        <p class="chapter-transition">
+          If neither player wants to keep fighting, how do we know who has
+          won?
+        </p>
+      </div>
+      <div class="spread-board">
+        <div id="board"></div>
+        <p id="lesson-feedback" class="lesson-feedback" aria-live="polite"></p>
+        <div class="lesson-controls">
+          <button type="button" id="lesson-reset" class="go-board-reset">Reset this example</button>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
+    <script type="module" src="../ko.ts"></script>
+    <script type="module">
+      import { mount } from "../book-nav.ts";
+      mount("ko", document.querySelector("#book-nav"));
+    </script>
+  </body>
+</html>

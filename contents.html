@@ -57,8 +57,11 @@
           <span data-status-for="illegal-moves"></span>
         </li>
         <li>
-          <span>5. Ko</span>
-          <span class="lesson-status">Coming soon</span>
+          <div class="contents-entry">
+            <span class="chapter-kicker">第五章 · 劫</span>
+            <a href="./lessons/ko.html">5. Ko</a>
+          </div>
+          <span data-status-for="ko"></span>
         </li>
         <li>
           <span>Free play</span>
@@ -69,7 +72,7 @@
     <script type="module">
       import { isChapterComplete } from "./lesson-progress.ts";
 
-      for (const id of ["liberties-and-capture", "connected-groups", "illegal-moves"]) {
+      for (const id of ["liberties-and-capture", "connected-groups", "illegal-moves", "ko"]) {
         if (!isChapterComplete(id)) continue;
         const status = document.querySelector(`[data-status-for="${id}"]`);
         if (!status) continue;

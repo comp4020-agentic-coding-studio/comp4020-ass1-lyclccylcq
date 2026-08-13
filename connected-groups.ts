@@ -63,9 +63,10 @@ function describeLiberties(count: number): string {
   return count === 1 ? "1 liberty" : `${count} liberties`;
 }
 
-function illegalMoveFeedback(reason: "occupied" | "off-board" | "suicide"): string {
+function illegalMoveFeedback(reason: "occupied" | "off-board" | "suicide" | "ko"): string {
   if (reason === "suicide") return "That move has no liberties.";
   if (reason === "occupied") return "That point already has a stone on it.";
+  if (reason === "ko") return "That move would repeat the previous position.";
   return "That point isn't on the board.";
 }
 

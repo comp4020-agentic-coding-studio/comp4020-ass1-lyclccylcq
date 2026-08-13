@@ -2,7 +2,9 @@
 // truth for what a legal position looks like, so lessons, the sandbox, and
 // later features can all build on it without re-deriving the rules.
 //
-// Deliberately not implemented yet: ko and territory scoring.
+// Deliberately not implemented yet: territory scoring. Simple ko is
+// implemented (see placeStone's `koBoard` parameter); positional/situational
+// superko is not.
 
 export type Stone = "black" | "white";
 export type Cell = Stone | null;
@@ -26,6 +28,17 @@ export function createBoard(size = 9): Board {
 
 export function cloneBoard(board: Board): Board {
   return { size: board.size, cells: board.cells.map((row) => [...row]) };
+}
+
+/** True if every point on both boards holds the same stone (or is empty on both). */
+export function boardsEqual(a: Board, b: Board): boolean {
+  if (a.size !== b.size) return false;
+  for (let row = 0; row < a.size; row++) {
+    for (let col = 0; col < a.size; col++) {
+      if (a.cells[row][col] !== b.cells[row][col]) return false;
+    }
+  }
+  return true;
 }
 
 export function pointKey(point: Point): string {
@@ -95,7 +108,7 @@ export function getLiberties(board: Board, group: Point[]): Point[] {
 
 export type PlaceResult =
   | { ok: true; board: Board; captured: Point[] }
-  | { ok: false; reason: "occupied" | "off-board" | "suicide" };
+  | { ok: false; reason: "occupied" | "off-board" | "suicide" | "ko" };
 
 /**
  * Places `colour` at `point`, removes any opponent group left with zero
@@ -104,8 +117,15 @@ export type PlaceResult =
  * stones gave it one. A point emptied by an earlier capture is never
  * permanently blocked: legality here is recomputed fresh from the board
  * passed in, not from history.
+ *
+ * `koBoard`, if supplied, is compared against the resulting position: an
+ * exact match is rejected with reason "ko" instead of being played. This is
+ * simple ko only (one supplied snapshot, not full move history) — the
+ * caller decides what "the position immediately before the opponent's
+ * previous move" is and passes it in; a caller that never passes it (every
+ * existing lesson) gets no ko enforcement at all, so this is purely additive.
  */
-export function placeStone(board: Board, point: Point, colour: Stone): PlaceResult {
+export function placeStone(board: Board, point: Point, colour: Stone, koBoard?: Board): PlaceResult {
   if (!isOnBoard(board, point)) return { ok: false, reason: "off-board" };
   if (getStone(board, point) !== null) return { ok: false, reason: "occupied" };
 
@@ -135,6 +155,10 @@ export function placeStone(board: Board, point: Point, colour: Stone): PlaceResu
   const ownGroup = getGroup(next, point);
   if (getLiberties(next, ownGroup).length === 0) {
     return { ok: false, reason: "suicide" };
+  }
+
+  if (koBoard && boardsEqual(next, koBoard)) {
+    return { ok: false, reason: "ko" };
   }
 
   return { ok: true, board: next, captured };

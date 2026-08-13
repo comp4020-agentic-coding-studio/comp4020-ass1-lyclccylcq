@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { BOOK_PAGES, findPage } from "./book-manifest";
 import { connectedGroupsLesson } from "./lesson-connected-groups";
 import { illegalMovesLesson } from "./lesson-illegal-moves";
+import { koLesson } from "./lesson-ko";
 import { libertiesAndCaptureLesson } from "./lesson-liberties-capture";
 import { placingStonesLesson } from "./lesson-placing-stones";
 
 describe("book manifest", () => {
-  it("orders the book cover -> contents -> four chapters -> closing", () => {
+  it("orders the book cover -> contents -> five chapters -> closing", () => {
     expect(BOOK_PAGES.map((page) => page.id)).toEqual([
       "cover",
       "contents",
@@ -14,6 +15,7 @@ describe("book manifest", () => {
       "liberties-and-capture",
       "connected-groups",
       "illegal-moves",
+      "ko",
       "closing",
     ]);
   });
@@ -23,6 +25,7 @@ describe("book manifest", () => {
     expect(findPage("liberties-and-capture")?.id).toBe(libertiesAndCaptureLesson.id);
     expect(findPage("connected-groups")?.id).toBe(connectedGroupsLesson.id);
     expect(findPage("illegal-moves")?.id).toBe(illegalMovesLesson.id);
+    expect(findPage("ko")?.id).toBe(koLesson.id);
   });
 
   it("every page has a unique id and a unique path", () => {
@@ -30,13 +33,14 @@ describe("book manifest", () => {
     expect(new Set(BOOK_PAGES.map((page) => page.path)).size).toBe(BOOK_PAGES.length);
   });
 
-  it("only the four chapters carry a chapter kicker", () => {
+  it("only the five chapters carry a chapter kicker", () => {
     const withKicker = BOOK_PAGES.filter((page) => page.chapterKicker);
     expect(withKicker.map((page) => page.id)).toEqual([
       "placing-stones",
       "liberties-and-capture",
       "connected-groups",
       "illegal-moves",
+      "ko",
     ]);
   });
 
