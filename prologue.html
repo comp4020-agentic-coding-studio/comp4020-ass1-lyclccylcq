@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Closing — Learn Go</title>
+    <title>Prologue — Learn Go</title>
     <link rel="stylesheet" href="./styles.css" />
     <script>
       (function () {
@@ -26,20 +26,22 @@
         <a href="./contents.html">Contents</a>
       </nav>
     </header>
-    <main class="closing">
-      <p class="chapter-kicker">終 · 结语</p>
-      <div class="closing-seal" aria-hidden="true">終</div>
-      <h1>You've finished the book</h1>
+    <main>
+      <p class="chapter-kicker">序章 · 前言</p>
+      <h1>About this book</h1>
+      <p class="cover-tagline">Learn Go by playing, not reading.</p>
       <p>
-        Stones go on intersections, liberties keep them alive, connected
-        stones share those liberties, and a move that leaves none is illegal
-        &mdash; unless it captures first. Ko stops a capture from repeating
-        forever, and once a game is finished, counting each player's stones
-        and territory tells you who won.
+        This is a short, interactive rulebook for absolute beginners. Each
+        chapter teaches exactly one rule of Go on a real 9&times;9 board
+        &mdash; you place the stones yourself and watch the rule happen,
+        rather than reading a description of it.
       </p>
       <p>
-        <a href="./contents.html">Return to the contents</a> to revisit any
-        chapter, or <a href="./">go back to the cover</a>.
+        Interaction is the point: every chapter is a small puzzle to play
+        through, not a page to skim. By the end you will have placed a
+        stone, captured a group, met an illegal move, seen a repeating
+        position forbidden by <em>ko</em>, and scored a finished game
+        &mdash; the whole shape of the game, one rule at a time.
       </p>
     </main>
     <footer>
@@ -47,7 +49,7 @@
     </footer>
     <script type="module">
       import { mount } from "./book-nav.ts";
-      mount("closing", document.querySelector("#book-nav"));
+      mount("prologue", document.querySelector("#book-nav"));
     </script>
   </body>
 </html>

@@ -8,10 +8,11 @@ import { placingStonesLesson } from "./lesson-placing-stones";
 import { scoringLesson } from "./lesson-scoring";
 
 describe("book manifest", () => {
-  it("orders the book cover -> contents -> six chapters -> closing", () => {
+  it("orders the book cover -> contents -> prologue -> six chapters -> closing", () => {
     expect(BOOK_PAGES.map((page) => page.id)).toEqual([
       "cover",
       "contents",
+      "prologue",
       "placing-stones",
       "liberties-and-capture",
       "connected-groups",
@@ -50,5 +51,13 @@ describe("book manifest", () => {
 
   it("findPage returns undefined for an unknown id", () => {
     expect(findPage("nope")).toBeUndefined();
+  });
+
+  it("the prologue is registered as its own addressable page", () => {
+    expect(findPage("prologue")).toEqual({
+      id: "prologue",
+      path: "prologue.html",
+      title: "Prologue",
+    });
   });
 });

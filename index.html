@@ -20,22 +20,75 @@
     </script>
   </head>
   <body>
-    <header>
-      <nav aria-label="Primary">
-        <a href="./">Home</a>
-        <a href="./contents.html">Contents</a>
-      </nav>
-    </header>
     <main class="cover">
-      <p class="cover-kicker">開卷 · Begin</p>
-      <h1>Learn Go</h1>
-      <p class="cover-tagline">Learn Go by playing, not reading.</p>
-      <p>
-        A short, interactive rulebook for the board game Go. Each chapter
-        teaches one rule on a real 9&times;9 board &mdash; place a stone and
-        see the rule for yourself, rather than reading about it.
-      </p>
-      <a class="cover-enter" href="./contents.html">Open the book</a>
+      <h1 class="visually-hidden">Learn Go</h1>
+      <nav aria-label="Primary">
+        <a class="cover-enter" href="./contents.html">
+          <span class="cover-book" aria-hidden="true">
+            <svg
+              class="cover-book-art"
+              viewBox="0 0 300 420"
+              preserveAspectRatio="none"
+            >
+              <rect class="cover-book-spine" x="0" y="0" width="34" height="420" />
+              <g class="cover-book-thread">
+                <line x1="17" y1="45" x2="17" y2="360" />
+                <circle cx="17" cy="60" r="3" />
+                <circle cx="17" cy="130" r="3" />
+                <circle cx="17" cy="200" r="3" />
+                <circle cx="17" cy="270" r="3" />
+                <circle cx="17" cy="340" r="3" />
+              </g>
+              <g class="cover-book-diagram cover-book-diagram-faint">
+                <line x1="60" y1="15" x2="60" y2="95" />
+                <line x1="90" y1="15" x2="90" y2="95" />
+                <line x1="120" y1="15" x2="120" y2="95" />
+                <line x1="150" y1="15" x2="150" y2="95" />
+                <line x1="55" y1="20" x2="155" y2="20" />
+                <line x1="55" y1="50" x2="155" y2="50" />
+                <line x1="55" y1="80" x2="155" y2="80" />
+              </g>
+              <g class="cover-book-diagram">
+                <line x1="54" y1="100" x2="54" y2="420" />
+                <line x1="81" y1="100" x2="81" y2="420" />
+                <line x1="108" y1="100" x2="108" y2="420" />
+                <line x1="135" y1="100" x2="135" y2="420" />
+                <line x1="162" y1="100" x2="162" y2="420" />
+                <line x1="189" y1="100" x2="189" y2="420" />
+                <line x1="54" y1="140" x2="230" y2="140" />
+                <line x1="54" y1="167" x2="230" y2="167" />
+                <line x1="54" y1="194" x2="230" y2="194" />
+                <line x1="54" y1="221" x2="230" y2="221" />
+                <line x1="54" y1="248" x2="230" y2="248" />
+                <line x1="54" y1="275" x2="230" y2="275" />
+                <line x1="54" y1="302" x2="230" y2="302" />
+                <g class="cover-book-stone">
+                  <circle cx="81" cy="221" r="8" />
+                </g>
+                <g class="cover-book-stone">
+                  <circle cx="81" cy="248" r="8" />
+                  <text x="81" y="248" dominant-baseline="central" text-anchor="middle">一</text>
+                </g>
+                <g class="cover-book-stone">
+                  <circle cx="108" cy="248" r="8" />
+                  <text x="108" y="248" dominant-baseline="central" text-anchor="middle">二</text>
+                </g>
+                <g class="cover-book-stone">
+                  <circle cx="108" cy="221" r="8" />
+                  <text x="108" y="221" dominant-baseline="central" text-anchor="middle">三</text>
+                </g>
+                <g class="cover-book-stone">
+                  <circle cx="135" cy="275" r="8" />
+                </g>
+              </g>
+            </svg>
+            <span class="cover-book-label">
+              <span class="cover-book-label-text">围棋入门</span>
+            </span>
+          </span>
+          <span class="cover-enter-text">Open the book</span>
+        </a>
+      </nav>
     </main>
   </body>
 </html>

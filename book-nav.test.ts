@@ -23,6 +23,16 @@ describe("getAdjacent", () => {
     expect(adjacent.next?.id).toBe("illegal-moves");
   });
 
+  it("the prologue sits between contents and the first chapter", () => {
+    const adjacent = getAdjacent("prologue");
+    expect(adjacent.prev?.id).toBe("contents");
+    expect(adjacent.next?.id).toBe("placing-stones");
+  });
+
+  it("the first chapter's previous page is the prologue, not contents", () => {
+    expect(getAdjacent("placing-stones").prev?.id).toBe("prologue");
+  });
+
   it("returns no neighbours for an unknown id", () => {
     expect(getAdjacent("nope")).toEqual({ prev: null, next: null });
   });
@@ -62,6 +72,21 @@ describe("mount", () => {
     const next = doc.querySelector<HTMLAnchorElement>(".book-nav-next");
     expect(prev?.getAttribute("href")).toBe("./liberties-and-capture.html");
     expect(next?.getAttribute("href")).toBe("./illegal-moves.html");
+  });
+
+  it("renders a working prev and next link for the prologue, a root-level page", () => {
+    const dom = new JSDOM(`<!doctype html><body><footer><nav id="book-nav"></nav></footer></body>`, {
+      url: "https://example.test/prologue.html",
+    });
+    vi.stubGlobal("document", dom.window.document);
+    vi.stubGlobal("window", dom.window);
+
+    mount("prologue", dom.window.document.querySelector("#book-nav"));
+
+    const prev = dom.window.document.querySelector<HTMLAnchorElement>(".book-nav-prev");
+    const next = dom.window.document.querySelector<HTMLAnchorElement>(".book-nav-next");
+    expect(prev?.getAttribute("href")).toBe("./contents.html");
+    expect(next?.getAttribute("href")).toBe("./lessons/placing-stones.html");
   });
 
   it("omits the next link on the last page, and the prev link on the first", () => {
