@@ -28,6 +28,7 @@ import {
   illegalMovesLesson,
 } from "./lesson-illegal-moves";
 import { CAPTURE_POINT, KO_POINT, koLesson } from "./lesson-ko";
+import { createScoringBoard, scoringLesson } from "./lesson-scoring";
 
 const lessons = [
   placingStonesLesson,
@@ -35,6 +36,7 @@ const lessons = [
   connectedGroupsLesson,
   illegalMovesLesson,
   koLesson,
+  scoringLesson,
 ];
 const examples = [
   { group: EXAMPLE_1_GROUP, createBoard: createExample1Board },
@@ -107,6 +109,23 @@ describe("lesson definitions", () => {
     const board = koLesson.createInitialBoard();
     expect(getStone(board, KO_POINT)).toBe("white");
     expect(getStone(board, CAPTURE_POINT)).toBeNull();
+  });
+
+  it("Lesson 6 (scoring) exists", () => {
+    expect(scoringLesson.id).toBe("scoring");
+    expect(scoringLesson.title).toBeTruthy();
+  });
+
+  it("Lesson 6 loads its own initial state: a finished 9x9 position dividing the board in two", () => {
+    const board = scoringLesson.createInitialBoard();
+    expect(board.size).toBe(9);
+    expect(getStone(board, { row: 0, col: 3 })).toBe("black");
+    expect(getStone(board, { row: 0, col: 4 })).toBe("white");
+    expect(getStone(board, { row: 8, col: 5 })).toBe("black");
+    expect(getStone(board, { row: 8, col: 6 })).toBe("white");
+
+    const sameBoard = createScoringBoard();
+    expect(sameBoard).toEqual(board);
   });
 
   it("loading one lesson's initial state leaves the other lessons' definitions untouched", () => {

@@ -44,6 +44,12 @@ export const BOOK_PAGES: BookPage[] = [
     chapterKicker: "第五章 · 劫",
     title: "Ko",
   },
+  {
+    id: "scoring",
+    path: "lessons/scoring.html",
+    chapterKicker: "第六章 · 数子",
+    title: "Winning the Game",
+  },
   { id: "closing", path: "closing.html", title: "Closing" },
 ];
 

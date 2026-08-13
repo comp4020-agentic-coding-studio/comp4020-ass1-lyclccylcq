@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Winning the Game — Learn Go</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <header>
+      <nav aria-label="Primary">
+        <a href="../">Home</a>
+        <a href="../contents.html">Contents</a>
+      </nav>
+    </header>
+    <main class="spread">
+      <div class="spread-text">
+        <p class="chapter-kicker">第六章 · 数子</p>
+        <h1>6. Winning the Game</h1>
+        <p>
+          Ko showed us when a move is illegal. Once neither player has
+          anything left worth playing, the game simply stops there — and we
+          need a way to say who won.
+        </p>
+        <p>
+          Go is scored by area: each player's score is their own stones on
+          the board, plus every empty point that only their stones surround.
+          Whoever ends with the higher score wins. White also receives a
+          fixed bonus called komi, added to make up for Black playing first.
+        </p>
+        <p>
+          The position below is already finished — no more moves are being
+          played, and any dead stones have already been taken off the board.
+          Count it through with the button below.
+        </p>
+        <p id="stage-instruction" class="lesson-instruction"></p>
+        <p class="chapter-transition">
+          That's every rule the game needs — once you've counted this board,
+          there's nothing left to explain.
+        </p>
+      </div>
+      <div class="spread-board">
+        <div id="board"></div>
+        <div id="score-breakdown" aria-live="polite"></div>
+        <p id="lesson-feedback" class="lesson-feedback" aria-live="polite"></p>
+        <div class="lesson-controls">
+          <button type="button" id="lesson-next" class="go-board-reset"></button>
+          <button type="button" id="lesson-reset" class="go-board-reset">Start counting over</button>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
+    <script type="module" src="../scoring.ts"></script>
+    <script type="module">
+      import { mount } from "../book-nav.ts";
+      mount("scoring", document.querySelector("#book-nav"));
+    </script>
+  </body>
+</html>

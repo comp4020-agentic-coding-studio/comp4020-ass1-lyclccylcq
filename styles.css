@@ -313,6 +313,31 @@ main.spread {
   outline: none;
 }
 
+/* Territory markers (Lesson 6): shape carries the meaning, colour is only a
+   secondary cue — a square, a ring, and a cross read apart from each other
+   even in grayscale or under a colour-vision deficiency. */
+.go-board-marker {
+  pointer-events: none;
+}
+
+.go-board-marker-black {
+  fill: var(--ink);
+  opacity: 0.55;
+}
+
+.go-board-marker-white {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.05;
+  opacity: 0.75;
+}
+
+.go-board-marker-neutral {
+  stroke: var(--accent);
+  stroke-width: 0.05;
+  opacity: 0.75;
+}
+
 .go-board-point-black {
   fill: var(--stone-black);
   stroke: #000;
