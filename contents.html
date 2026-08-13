@@ -20,68 +20,141 @@
     </script>
   </head>
   <body>
+    <div class="table-scene" aria-hidden="true">
+      <div class="table-scene-surface"></div>
+      <div class="table-board">
+        <svg class="table-board-grid" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="5" y1="5" x2="5" y2="95" />
+          <line x1="15" y1="5" x2="15" y2="95" />
+          <line x1="25" y1="5" x2="25" y2="95" />
+          <line x1="35" y1="5" x2="35" y2="95" />
+          <line x1="45" y1="5" x2="45" y2="95" />
+          <line x1="55" y1="5" x2="55" y2="95" />
+          <line x1="65" y1="5" x2="65" y2="95" />
+          <line x1="75" y1="5" x2="75" y2="95" />
+          <line x1="85" y1="5" x2="85" y2="95" />
+          <line x1="95" y1="5" x2="95" y2="95" />
+          <line x1="5" y1="5" x2="95" y2="5" />
+          <line x1="5" y1="15" x2="95" y2="15" />
+          <line x1="5" y1="25" x2="95" y2="25" />
+          <line x1="5" y1="35" x2="95" y2="35" />
+          <line x1="5" y1="45" x2="95" y2="45" />
+          <line x1="5" y1="55" x2="95" y2="55" />
+          <line x1="5" y1="65" x2="95" y2="65" />
+          <line x1="5" y1="75" x2="95" y2="75" />
+          <line x1="5" y1="85" x2="95" y2="85" />
+          <line x1="5" y1="95" x2="95" y2="95" />
+          <circle cx="25" cy="25" r="1.1" />
+          <circle cx="75" cy="25" r="1.1" />
+          <circle cx="50" cy="50" r="1.1" />
+          <circle cx="25" cy="75" r="1.1" />
+          <circle cx="75" cy="75" r="1.1" />
+        </svg>
+      </div>
+      <svg class="table-bowl table-bowl-white" viewBox="0 0 100 70">
+        <defs>
+          <radialGradient id="bowlWoodWhite" cx="35%" cy="25%" r="80%">
+            <stop offset="0%" stop-color="#7a4f2a" />
+            <stop offset="100%" stop-color="#43290f" />
+          </radialGradient>
+          <radialGradient id="stoneWhiteGrad" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fffdf6" />
+            <stop offset="100%" stop-color="#d8cfb6" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="50" cy="40" rx="46" ry="26" fill="url(#bowlWoodWhite)" />
+        <ellipse cx="50" cy="34" rx="38" ry="19" fill="#2a1a0d" opacity="0.4" />
+        <circle cx="38" cy="30" r="8" fill="url(#stoneWhiteGrad)" />
+        <circle cx="53" cy="26" r="8" fill="url(#stoneWhiteGrad)" />
+        <circle cx="46" cy="36" r="8" fill="url(#stoneWhiteGrad)" />
+        <circle cx="61" cy="33" r="8" fill="url(#stoneWhiteGrad)" />
+      </svg>
+      <svg class="table-bowl table-bowl-black" viewBox="0 0 100 70">
+        <defs>
+          <radialGradient id="bowlWoodBlack" cx="35%" cy="25%" r="80%">
+            <stop offset="0%" stop-color="#6b4526" />
+            <stop offset="100%" stop-color="#3a230d" />
+          </radialGradient>
+          <radialGradient id="stoneBlackGrad" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#4a4a4a" />
+            <stop offset="100%" stop-color="#0a0a0a" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="50" cy="40" rx="46" ry="26" fill="url(#bowlWoodBlack)" />
+        <ellipse cx="50" cy="34" rx="38" ry="19" fill="#000" opacity="0.35" />
+        <circle cx="40" cy="29" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="55" cy="25" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="48" cy="37" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="63" cy="33" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="34" cy="40" r="8" fill="url(#stoneBlackGrad)" />
+      </svg>
+    </div>
     <header>
       <nav aria-label="Primary">
         <a href="./">Close the book</a>
         <a href="./contents.html">Contents</a>
       </nav>
     </header>
-    <main>
-      <p class="chapter-kicker">目录</p>
-      <h1>Contents</h1>
-      <ol class="contents-list">
-        <li class="contents-prologue">
-          <div class="contents-entry">
-            <span class="chapter-kicker">序章</span>
-            <a href="./prologue.html">About this book</a>
-          </div>
-        </li>
-        <li>
-          <div class="contents-entry">
-            <span class="chapter-kicker">第一章 · 着子</span>
-            <a href="./lessons/placing-stones.html">1. Placing a stone</a>
-          </div>
-        </li>
-        <li>
-          <div class="contents-entry">
-            <span class="chapter-kicker">第二章 · 气</span>
-            <a href="./lessons/liberties-and-capture.html">2. Liberties and capture</a>
-          </div>
-          <span data-status-for="liberties-and-capture"></span>
-        </li>
-        <li>
-          <div class="contents-entry">
-            <span class="chapter-kicker">第三章 · 棋块</span>
-            <a href="./lessons/connected-groups.html">3. Connected groups</a>
-          </div>
-          <span data-status-for="connected-groups"></span>
-        </li>
-        <li>
-          <div class="contents-entry">
-            <span class="chapter-kicker">第四章 · 禁着</span>
-            <a href="./lessons/illegal-moves.html">4. Illegal moves: suicide</a>
-          </div>
-          <span data-status-for="illegal-moves"></span>
-        </li>
-        <li>
-          <div class="contents-entry">
-            <span class="chapter-kicker">第五章 · 劫</span>
-            <a href="./lessons/ko.html">5. Ko</a>
-          </div>
-          <span data-status-for="ko"></span>
-        </li>
-        <li>
-          <div class="contents-entry">
-            <span class="chapter-kicker">第六章 · 数子</span>
-            <a href="./lessons/scoring.html">6. Winning the game</a>
-          </div>
-          <span data-status-for="scoring"></span>
-        </li>
-        <li>
-          <span>Free play</span>
-          <span class="lesson-status">Coming soon</span>
-        </li>
-      </ol>
+    <main class="book-open-shell">
+      <div class="book-open leaf">
+        <div class="book-open-heading">
+          <p class="chapter-kicker">目录</p>
+          <h1>Contents</h1>
+        </div>
+        <ol class="contents-list">
+          <li class="contents-prologue">
+            <div class="contents-entry">
+              <span class="chapter-kicker">序章</span>
+              <a href="./prologue.html">About this book</a>
+            </div>
+          </li>
+          <li>
+            <div class="contents-entry">
+              <span class="chapter-kicker">第一章 · 着子</span>
+              <a href="./lessons/placing-stones.html">1. Placing a stone</a>
+            </div>
+          </li>
+          <li>
+            <div class="contents-entry">
+              <span class="chapter-kicker">第二章 · 气</span>
+              <a href="./lessons/liberties-and-capture.html">2. Liberties and capture</a>
+            </div>
+            <span data-status-for="liberties-and-capture"></span>
+          </li>
+          <li>
+            <div class="contents-entry">
+              <span class="chapter-kicker">第三章 · 棋块</span>
+              <a href="./lessons/connected-groups.html">3. Connected groups</a>
+            </div>
+            <span data-status-for="connected-groups"></span>
+          </li>
+          <li>
+            <div class="contents-entry">
+              <span class="chapter-kicker">第四章 · 禁着</span>
+              <a href="./lessons/illegal-moves.html">4. Illegal moves: suicide</a>
+            </div>
+            <span data-status-for="illegal-moves"></span>
+          </li>
+          <li>
+            <div class="contents-entry">
+              <span class="chapter-kicker">第五章 · 劫</span>
+              <a href="./lessons/ko.html">5. Ko</a>
+            </div>
+            <span data-status-for="ko"></span>
+          </li>
+          <li>
+            <div class="contents-entry">
+              <span class="chapter-kicker">第六章 · 数子</span>
+              <a href="./lessons/scoring.html">6. Winning the game</a>
+            </div>
+            <span data-status-for="scoring"></span>
+          </li>
+          <li>
+            <span>Free play</span>
+            <span class="lesson-status">Coming soon</span>
+          </li>
+        </ol>
+      </div>
     </main>
     <script type="module">
       import { isChapterComplete } from "./lesson-progress.ts";

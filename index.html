@@ -20,6 +20,75 @@
     </script>
   </head>
   <body>
+    <div class="table-scene" aria-hidden="true">
+      <div class="table-scene-surface"></div>
+      <div class="table-board">
+        <svg class="table-board-grid" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="5" y1="5" x2="5" y2="95" />
+          <line x1="15" y1="5" x2="15" y2="95" />
+          <line x1="25" y1="5" x2="25" y2="95" />
+          <line x1="35" y1="5" x2="35" y2="95" />
+          <line x1="45" y1="5" x2="45" y2="95" />
+          <line x1="55" y1="5" x2="55" y2="95" />
+          <line x1="65" y1="5" x2="65" y2="95" />
+          <line x1="75" y1="5" x2="75" y2="95" />
+          <line x1="85" y1="5" x2="85" y2="95" />
+          <line x1="95" y1="5" x2="95" y2="95" />
+          <line x1="5" y1="5" x2="95" y2="5" />
+          <line x1="5" y1="15" x2="95" y2="15" />
+          <line x1="5" y1="25" x2="95" y2="25" />
+          <line x1="5" y1="35" x2="95" y2="35" />
+          <line x1="5" y1="45" x2="95" y2="45" />
+          <line x1="5" y1="55" x2="95" y2="55" />
+          <line x1="5" y1="65" x2="95" y2="65" />
+          <line x1="5" y1="75" x2="95" y2="75" />
+          <line x1="5" y1="85" x2="95" y2="85" />
+          <line x1="5" y1="95" x2="95" y2="95" />
+          <circle cx="25" cy="25" r="1.1" />
+          <circle cx="75" cy="25" r="1.1" />
+          <circle cx="50" cy="50" r="1.1" />
+          <circle cx="25" cy="75" r="1.1" />
+          <circle cx="75" cy="75" r="1.1" />
+        </svg>
+      </div>
+      <svg class="table-bowl table-bowl-white" viewBox="0 0 100 70">
+        <defs>
+          <radialGradient id="bowlWoodWhite" cx="35%" cy="25%" r="80%">
+            <stop offset="0%" stop-color="#7a4f2a" />
+            <stop offset="100%" stop-color="#43290f" />
+          </radialGradient>
+          <radialGradient id="stoneWhiteGrad" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fffdf6" />
+            <stop offset="100%" stop-color="#d8cfb6" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="50" cy="40" rx="46" ry="26" fill="url(#bowlWoodWhite)" />
+        <ellipse cx="50" cy="34" rx="38" ry="19" fill="#2a1a0d" opacity="0.4" />
+        <circle cx="38" cy="30" r="8" fill="url(#stoneWhiteGrad)" />
+        <circle cx="53" cy="26" r="8" fill="url(#stoneWhiteGrad)" />
+        <circle cx="46" cy="36" r="8" fill="url(#stoneWhiteGrad)" />
+        <circle cx="61" cy="33" r="8" fill="url(#stoneWhiteGrad)" />
+      </svg>
+      <svg class="table-bowl table-bowl-black" viewBox="0 0 100 70">
+        <defs>
+          <radialGradient id="bowlWoodBlack" cx="35%" cy="25%" r="80%">
+            <stop offset="0%" stop-color="#6b4526" />
+            <stop offset="100%" stop-color="#3a230d" />
+          </radialGradient>
+          <radialGradient id="stoneBlackGrad" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#4a4a4a" />
+            <stop offset="100%" stop-color="#0a0a0a" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="50" cy="40" rx="46" ry="26" fill="url(#bowlWoodBlack)" />
+        <ellipse cx="50" cy="34" rx="38" ry="19" fill="#000" opacity="0.35" />
+        <circle cx="40" cy="29" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="55" cy="25" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="48" cy="37" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="63" cy="33" r="8" fill="url(#stoneBlackGrad)" />
+        <circle cx="34" cy="40" r="8" fill="url(#stoneBlackGrad)" />
+      </svg>
+    </div>
     <main class="cover">
       <h1 class="visually-hidden">Learn Go</h1>
       <nav aria-label="Primary">
@@ -30,6 +99,12 @@
               viewBox="0 0 300 420"
               preserveAspectRatio="none"
             >
+              <defs>
+                <filter id="ink-brush" x="-20%" y="-60%" width="140%" height="220%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.05 0.4" numOctaves="2" seed="6" result="noise" />
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+                </filter>
+              </defs>
               <rect class="cover-book-spine" x="0" y="0" width="34" height="420" />
               <g class="cover-book-thread">
                 <line x1="17" y1="45" x2="17" y2="360" />
@@ -39,56 +114,58 @@
                 <circle cx="17" cy="270" r="3" />
                 <circle cx="17" cy="340" r="3" />
               </g>
-              <g class="cover-book-diagram cover-book-diagram-faint">
-                <line x1="60" y1="15" x2="60" y2="95" />
-                <line x1="90" y1="15" x2="90" y2="95" />
-                <line x1="120" y1="15" x2="120" y2="95" />
-                <line x1="150" y1="15" x2="150" y2="95" />
-                <line x1="55" y1="20" x2="155" y2="20" />
-                <line x1="55" y1="50" x2="155" y2="50" />
-                <line x1="55" y1="80" x2="155" y2="80" />
-              </g>
-              <g class="cover-book-diagram">
-                <line x1="54" y1="100" x2="54" y2="420" />
-                <line x1="81" y1="100" x2="81" y2="420" />
-                <line x1="108" y1="100" x2="108" y2="420" />
-                <line x1="135" y1="100" x2="135" y2="420" />
-                <line x1="162" y1="100" x2="162" y2="420" />
-                <line x1="189" y1="100" x2="189" y2="420" />
-                <line x1="54" y1="140" x2="230" y2="140" />
-                <line x1="54" y1="167" x2="230" y2="167" />
-                <line x1="54" y1="194" x2="230" y2="194" />
-                <line x1="54" y1="221" x2="230" y2="221" />
-                <line x1="54" y1="248" x2="230" y2="248" />
-                <line x1="54" y1="275" x2="230" y2="275" />
-                <line x1="54" y1="302" x2="230" y2="302" />
-                <g class="cover-book-stone">
-                  <circle cx="81" cy="221" r="8" />
+              <!-- A single small kifu fragment — a printed game-record insert,
+                   not a board-wide grid (§2). -->
+              <g class="cover-kifu" transform="rotate(-3 90 324)">
+                <line class="cover-kifu-grid" x1="54" y1="288" x2="54" y2="360" />
+                <line class="cover-kifu-grid" x1="72" y1="288" x2="72" y2="360" />
+                <line class="cover-kifu-grid" x1="90" y1="288" x2="90" y2="360" />
+                <line class="cover-kifu-grid" x1="108" y1="288" x2="108" y2="360" />
+                <line class="cover-kifu-grid" x1="126" y1="288" x2="126" y2="360" />
+                <line class="cover-kifu-grid" x1="54" y1="288" x2="126" y2="288" />
+                <line class="cover-kifu-grid" x1="54" y1="306" x2="126" y2="306" />
+                <line class="cover-kifu-grid" x1="54" y1="324" x2="126" y2="324" />
+                <line class="cover-kifu-grid" x1="54" y1="342" x2="126" y2="342" />
+                <line class="cover-kifu-grid" x1="54" y1="360" x2="126" y2="360" />
+                <g class="cover-kifu-stone">
+                  <circle cx="72" cy="306" r="6.5" />
                 </g>
-                <g class="cover-book-stone">
-                  <circle cx="81" cy="248" r="8" />
-                  <text x="81" y="248" dominant-baseline="central" text-anchor="middle">一</text>
+                <g class="cover-kifu-stone">
+                  <circle cx="90" cy="306" r="6.5" />
+                  <text x="90" y="306" dominant-baseline="central" text-anchor="middle">一</text>
                 </g>
-                <g class="cover-book-stone">
-                  <circle cx="108" cy="248" r="8" />
-                  <text x="108" y="248" dominant-baseline="central" text-anchor="middle">二</text>
+                <g class="cover-kifu-stone">
+                  <circle cx="90" cy="324" r="6.5" />
                 </g>
-                <g class="cover-book-stone">
-                  <circle cx="108" cy="221" r="8" />
-                  <text x="108" y="221" dominant-baseline="central" text-anchor="middle">三</text>
+                <g class="cover-kifu-stone">
+                  <circle cx="108" cy="342" r="6.5" />
+                  <text x="108" y="342" dominant-baseline="central" text-anchor="middle">二</text>
                 </g>
-                <g class="cover-book-stone">
-                  <circle cx="135" cy="275" r="8" />
+                <g class="cover-kifu-stone">
+                  <circle cx="72" cy="342" r="6.5" />
                 </g>
               </g>
             </svg>
             <span class="cover-book-label">
-              <span class="cover-book-label-text">围棋入门</span>
+              <span class="cover-book-label-text">Learn Go</span>
             </span>
           </span>
           <span class="cover-enter-text">Open the book</span>
         </a>
       </nav>
     </main>
+    <script>
+      (function () {
+        var link = document.querySelector(".cover-enter");
+        if (!link) return;
+        link.addEventListener("click", function () {
+          try {
+            sessionStorage.setItem("learn-go:page-turn", "open");
+          } catch (error) {
+            // sessionStorage unavailable: falls back to the default transition.
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

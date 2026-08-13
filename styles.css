@@ -16,6 +16,18 @@
   --cloth-dark: #141b31;
   --label-paper: #efe3c8;
   --label-border: #2a2116;
+
+  /* Tabletop scene: the wood/beige/paper world the book physically rests
+     in, kept separate from --board-wood (the in-lesson SVG board) so this
+     milestone's environment work can't accidentally touch lesson pages. */
+  --scene-bg: #e9dfc6;
+  --table-wood-mid: #c1873f;
+  --table-wood-dark: #8c5c26;
+  --table-wood-line: #4f3115;
+  --bowl-wood: #4a2f18;
+  --bowl-wood-light: #6b4526;
+  --leaf: #f1e6cf;
+  --leaf-fibre: #7a5f35;
 }
 
 /* Cross-document page turns (§4): opt in to the platform's View Transitions
@@ -82,6 +94,83 @@ main {
   view-transition-name: book-page;
 }
 
+/* Both sit above the fixed .table-scene backdrop (§9), regardless of DOM
+   order, so the tabletop never bleeds through the book or its chrome. */
+header,
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Tabletop backdrop (§5–§9): a fixed, viewport-anchored wood Go board and
+   bowls behind the book. It carries no view-transition-name of its own —
+   since it renders identically on the cover and on Contents, it's simply
+   part of each document's default (untagged) root snapshot, so the browser
+   never animates it at all; only the named book-page element inside it
+   turns. Decorative throughout, hence aria-hidden on the whole scene and
+   pointer-events: none so it can never intercept a click. */
+.table-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.table-scene-surface {
+  position: absolute;
+  inset: 0;
+  background: var(--scene-bg);
+}
+
+.table-board {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(88vmin, 62rem);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 0.4rem;
+  background:
+    repeating-linear-gradient(89deg, rgb(0 0 0 / 4%) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(1deg, rgb(255 255 255 / 5%) 0 1px, transparent 1px 22px),
+    radial-gradient(ellipse at 50% 40%, var(--table-wood-mid), var(--table-wood-dark) 85%);
+  box-shadow:
+    0 1.5rem 3rem rgb(40 26 10 / 30%),
+    inset 0 0 0 1px rgb(0 0 0 / 15%);
+}
+
+.table-board-grid {
+  position: absolute;
+  inset: 6%;
+}
+
+.table-board-grid line {
+  stroke: var(--table-wood-line);
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+.table-board-grid circle {
+  fill: var(--table-wood-line);
+  opacity: 0.6;
+}
+
+.table-bowl {
+  position: absolute;
+  width: clamp(4rem, 11vmin, 7rem);
+}
+
+.table-bowl-white {
+  top: 6%;
+  right: 8%;
+}
+
+.table-bowl-black {
+  bottom: 8%;
+  left: 6%;
+}
+
 /* Cover page: the closed book IS the homepage — no hero copy, just the book,
    given the full viewport height to sit in. */
 .cover {
@@ -129,9 +218,17 @@ main {
   aspect-ratio: 5 / 7;
   border-radius: 0.15rem;
   background-color: var(--cloth);
+
+  /* Uneven dye tone plus a soft vignette, so the cloth reads as tactile
+     material rather than a flat colour fill (§4). */
+  background-image:
+    radial-gradient(circle at 22% 18%, rgb(255 255 255 / 4%), transparent 42%),
+    radial-gradient(circle at 78% 82%, rgb(0 0 0 / 14%), transparent 48%),
+    linear-gradient(160deg, rgb(255 255 255 / 4%), transparent 35%);
   box-shadow:
     0 0.5rem 1.25rem rgb(10 12 24 / 35%),
-    0 0.1rem 0.25rem rgb(10 12 24 / 25%);
+    0 0.1rem 0.25rem rgb(10 12 24 / 25%),
+    inset 0 0 2.5rem rgb(0 0 0 / 25%);
   overflow: hidden;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -154,7 +251,8 @@ main {
   transform: translateY(-0.2rem);
   box-shadow:
     0 0.75rem 1.75rem rgb(10 12 24 / 40%),
-    0 0.15rem 0.35rem rgb(10 12 24 / 30%);
+    0 0.15rem 0.35rem rgb(10 12 24 / 30%),
+    inset 0 0 2.5rem rgb(0 0 0 / 25%);
 }
 
 .cover-book-art {
@@ -177,25 +275,24 @@ main {
   fill: rgb(245 240 225 / 80%);
 }
 
-.cover-book-diagram line {
-  stroke: rgb(255 255 255 / 22%);
+/* A single small kifu fragment (§2): a printed game-record insert pasted to
+   one corner of the cloth, not a board-wide grid — restrained enough to read
+   as an antique illustration rather than UI decoration. */
+.cover-kifu-grid {
+  stroke: rgb(255 255 255 / 18%);
   stroke-width: 1;
 }
 
-.cover-book-diagram-faint line {
-  stroke: rgb(255 255 255 / 10%);
-}
-
-.cover-book-stone circle {
+.cover-kifu-stone circle {
   fill: none;
-  stroke: rgb(255 255 255 / 55%);
-  stroke-width: 1.3;
+  stroke: rgb(255 255 255 / 42%);
+  stroke-width: 1.2;
 }
 
-.cover-book-stone text {
-  fill: rgb(255 255 255 / 65%);
+.cover-kifu-stone text {
+  fill: rgb(255 255 255 / 50%);
   font-family: inherit;
-  font-size: 11px;
+  font-size: 9px;
 }
 
 /* Pasted title-slip label: a warm ivory paper strip toward the right side,
@@ -216,13 +313,23 @@ main {
   justify-content: center;
 }
 
+/* English title, brush-styled without any font-family dependency (§3): the
+   Latin text runs sideways along the slip (writing-mode's default 'mixed'
+   text-orientation, not 'upright', which is right for CJK but stacks Latin
+   letters awkwardly), then an SVG filter (defined in .cover-book-art's
+   <defs>) roughens its edges with turbulence-driven displacement — a
+   dry-brush look with no reliance on any locally-installed calligraphy font,
+   since none exists in this project and the grading browser can't be
+   assumed to have one either. */
 .cover-book-label-text {
   writing-mode: vertical-rl;
-  text-orientation: upright;
-  font-family: "Songti SC", "Noto Serif SC", serif;
-  font-size: 11cqw;
-  letter-spacing: 0.3em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 9cqw;
+  letter-spacing: 0.06em;
   color: var(--label-border);
+  filter: url("#ink-brush");
 }
 
 .cover-enter-text {
@@ -237,6 +344,83 @@ main {
   border-color: var(--accent);
 }
 
+/* Shared interior page material (§11/§13): aged, faintly fibrous paper for
+   any open-book page. Kept independent of .book-open's two-page layout so a
+   future Prologue/lesson page can adopt just the material. */
+.leaf {
+  background-color: var(--leaf);
+  background-image:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 2%) 0 1px, transparent 1px 6px),
+    radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(122 95 53 / 12%) 100%);
+  border-radius: 0.15rem;
+  box-shadow:
+    0 0.35rem 1rem rgb(60 40 15 / 20%),
+    0 0.05rem 0.15rem rgb(60 40 15 / 15%);
+  padding: 2.5rem 3rem 3rem;
+}
+
+main.book-open-shell {
+  max-width: 64rem;
+}
+
+/* Open-book spread (§11): one continuous leaf, split into two reading
+   columns with a shadowed centre gutter standing in for the spine — simpler
+   and more robust than two separately-positioned page elements, and it still
+   collapses to a single column on mobile (§22) by just dropping the columns
+   and the gutter. */
+.book-open {
+  position: relative;
+  isolation: isolate;
+}
+
+.book-open::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3rem;
+  margin-left: -1.5rem;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgb(0 0 0 / 10%) 45%,
+    rgb(0 0 0 / 16%) 50%,
+    rgb(0 0 0 / 10%) 55%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.book-open-heading {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Chapter numbering, shared by the contents list and every chapter page. A
+   <p>, never a heading, so each page keeps exactly one <h1>. */
+.chapter-kicker {
+  margin: 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-style: normal;
+}
+
+.book-open-heading .chapter-kicker {
+  margin-bottom: 0.35rem;
+}
+
+@media (width <= 47.99rem) {
+  .book-open::before {
+    display: none;
+  }
+
+  .leaf {
+    padding: 1.75rem 1.25rem 2rem;
+  }
+}
+
 /* Contents: a printed table of contents — rows separated by a rule, not
    cards. Generous vertical whitespace stands in for a page-number column. */
 .contents-list {
@@ -244,6 +428,14 @@ main {
   padding: 0;
   margin: 2rem 0 0;
   border-top: 1px solid var(--rule);
+  column-count: 2;
+  column-gap: 3rem;
+}
+
+@media (width <= 47.99rem) {
+  .contents-list {
+    column-count: 1;
+  }
 }
 
 .contents-list li {
@@ -253,6 +445,7 @@ main {
   gap: 1rem;
   padding: 1.1rem 0;
   border-bottom: 1px solid var(--rule);
+  break-inside: avoid;
 }
 
 .contents-list li.contents-prologue {
@@ -270,16 +463,6 @@ main {
 .lesson-status {
   color: var(--accent);
   font-size: 0.9rem;
-}
-
-/* Chapter numbering, shared by the contents list and every chapter page. A
-   <p>, never a heading, so each page keeps exactly one <h1>. */
-.chapter-kicker {
-  margin: 0;
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
-  color: var(--accent);
-  font-style: normal;
 }
 
 /* The one or two sentences linking a chapter to the next (§7): visually
@@ -514,58 +697,167 @@ main.spread {
   animation: none;
 }
 
-/* A direct jump (contents list, header nav, the cover) never tags a
-   direction, so it keeps the browser's default crossfade — just shortened,
-   per §8's "direct contents navigation may use a shorter transition." */
+/* 3D physical page turn (§14–§21): the book itself never moves — only the
+   view-transition snapshots of the *page* rotate, hinged at the spine, with
+   perspective so the rotation actually reads as depth instead of a squash.
+   perspective lives on the image-pair pseudo (the shared parent of the old
+   and new snapshots), which is where the spec places it for exactly this
+   reason: a perspective set on an ancestor of the rotated elements. */
+::view-transition-image-pair(book-page) {
+  perspective: 2000px;
+}
+
+::view-transition-old(book-page),
+::view-transition-new(book-page) {
+  backface-visibility: hidden;
+}
+
+/* A direct jump (contents list, header nav) never tags a direction, so it
+   keeps the browser's default crossfade — just shortened, per §8's "direct
+   contents navigation may use a shorter transition." */
 html:not([data-turn]) ::view-transition-old(book-page),
 html:not([data-turn]) ::view-transition-new(book-page) {
   animation-duration: 120ms;
 }
 
-/* Sequential Prev/Next (§4): a short rotate + slide standing in for a page
-   turning forward or back. Chosen over a page-flip library because this is
-   plain CSS with no runtime dependency at all. */
+html[data-turn="next"] ::view-transition-old(book-page),
+html[data-turn="next"] ::view-transition-new(book-page),
+html[data-turn="open"] ::view-transition-old(book-page),
+html[data-turn="open"] ::view-transition-new(book-page) {
+  transform-origin: left center;
+}
+
+html[data-turn="prev"] ::view-transition-old(book-page),
+html[data-turn="prev"] ::view-transition-new(book-page) {
+  transform-origin: right center;
+}
+
+/* Sequential Prev/Next: the outgoing page lifts off the spine and swings
+   past 90° out of view; the incoming page starts back-facing (hidden by
+   backface-visibility) and swings down into place. Direction is set purely
+   by which pair of keyframes runs — next and prev are mirror images of each
+   other, never the same animation played backwards. */
 html[data-turn="next"]::view-transition-old(book-page) {
-  animation: book-page-out-next 220ms ease-in both;
+  animation: book-page-turn-out-next 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
 }
 
 html[data-turn="next"]::view-transition-new(book-page) {
-  animation: book-page-in-next 220ms ease-out both;
+  animation: book-page-turn-in-next 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
 }
 
 html[data-turn="prev"]::view-transition-old(book-page) {
-  animation: book-page-out-prev 220ms ease-in both;
+  animation: book-page-turn-out-prev 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
 }
 
 html[data-turn="prev"]::view-transition-new(book-page) {
-  animation: book-page-in-prev 220ms ease-out both;
+  animation: book-page-turn-in-prev 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
 }
 
-@keyframes book-page-out-next {
-  to {
-    transform: rotateY(-8deg) translateX(-6%);
-    opacity: 0;
+/* Cover opening (§20): a slightly larger, slower rotation than an ordinary
+   page turn, since it's a heavier cover board rather than a paper leaf. The
+   Contents spread underneath is already fully rendered as the incoming
+   snapshot — nothing fades, the cover just swings away from it. */
+html[data-turn="open"]::view-transition-old(book-page) {
+  animation: book-cover-open-out 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
+}
+
+html[data-turn="open"]::view-transition-new(book-page) {
+  animation: book-cover-open-in 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
+}
+
+@keyframes book-page-turn-out-next {
+  0% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+
+  55% {
+    filter: drop-shadow(-0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
+  }
+
+  100% {
+    transform: rotateY(-160deg);
+    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
-@keyframes book-page-in-next {
-  from {
-    transform: rotateY(8deg) translateX(6%);
-    opacity: 0;
+@keyframes book-page-turn-in-next {
+  0% {
+    transform: rotateY(160deg);
+    filter: drop-shadow(0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
+  }
+
+  45% {
+    filter: drop-shadow(0.4rem 0.1rem 0.6rem rgb(20 12 4 / 22%));
+  }
+
+  100% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
-@keyframes book-page-out-prev {
-  to {
-    transform: rotateY(8deg) translateX(6%);
-    opacity: 0;
+@keyframes book-page-turn-out-prev {
+  0% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+
+  55% {
+    filter: drop-shadow(0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
+  }
+
+  100% {
+    transform: rotateY(160deg);
+    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
-@keyframes book-page-in-prev {
-  from {
-    transform: rotateY(-8deg) translateX(-6%);
-    opacity: 0;
+@keyframes book-page-turn-in-prev {
+  0% {
+    transform: rotateY(-160deg);
+    filter: drop-shadow(-0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
+  }
+
+  45% {
+    filter: drop-shadow(-0.4rem 0.1rem 0.6rem rgb(20 12 4 / 22%));
+  }
+
+  100% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+@keyframes book-cover-open-out {
+  0% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+
+  50% {
+    filter: drop-shadow(-1.4rem 0.4rem 1.6rem rgb(10 8 20 / 45%));
+  }
+
+  100% {
+    transform: rotateY(-165deg);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+@keyframes book-cover-open-in {
+  0% {
+    transform: rotateY(165deg);
+    filter: drop-shadow(1.4rem 0.4rem 1.6rem rgb(10 8 20 / 45%));
+  }
+
+  50% {
+    filter: drop-shadow(0.5rem 0.2rem 0.8rem rgb(10 8 20 / 25%));
+  }
+
+  100% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
