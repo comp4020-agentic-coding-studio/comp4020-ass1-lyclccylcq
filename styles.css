@@ -122,6 +122,18 @@ main {
   view-transition-name: book-page;
 }
 
+/* The cover's own box is named separately from every interior page's shared
+   book-page group (§cover-opening fix): the cover's main is sized to the
+   closed book itself, while an interior main (e.g. contents.html's
+   full-height centering shell) is a very differently shaped box. Sharing one
+   view-transition-name made the browser auto-interpolate one box's
+   position/size into the other underneath the cover's own rotateY keyframes,
+   producing a mid-transition mispositioned/mirrored frame. Naming them
+   apart makes cover-page and book-page independent, non-morphing groups. */
+main.cover {
+  view-transition-name: cover-page;
+}
+
 /* Both sit above the fixed .table-scene backdrop (§9), regardless of DOM
    order, so the tabletop never bleeds through the book or its chrome. */
 header,
@@ -192,7 +204,10 @@ main {
 /* Bowls are major secondary objects (§7), not corner icons: sized well above
    the board's own scale and pulled in toward it rather than left stranded at
    the viewport edges. Slightly asymmetric placement (top/bottom/inset differ)
-   reads as a real table, not a mirrored UI layout. */
+   reads as a real table, not a mirrored UI layout. Positioned to reflect
+   where each player actually keeps their bowl at a real board: White's
+   bowl upper-left, Black's lower-right, a natural diagonal rather than an
+   arbitrary pair of corners. */
 .table-bowl {
   position: absolute;
   width: clamp(11rem, 26vmin, 20rem);
@@ -200,12 +215,12 @@ main {
 
 .table-bowl-white {
   top: 3%;
-  right: 11%;
+  left: 11%;
 }
 
 .table-bowl-black {
   bottom: 4%;
-  left: 8%;
+  right: 8%;
 }
 
 @media (width <= 47.99rem) {
@@ -218,12 +233,12 @@ main {
 
   .table-bowl-white {
     top: 1%;
-    right: -4%;
+    left: -4%;
   }
 
   .table-bowl-black {
     bottom: 2%;
-    left: -4%;
+    right: -4%;
   }
 }
 
@@ -281,25 +296,25 @@ main {
 .table-loose-stone-white-1 {
   width: 2.4rem;
   top: 15%;
-  right: 8%;
+  left: 8%;
 }
 
 .table-loose-stone-white-2 {
   width: 1.9rem;
   top: 20%;
-  right: 15%;
+  left: 15%;
 }
 
 .table-loose-stone-black-1 {
   width: 2.4rem;
   bottom: 16%;
-  left: 6%;
+  right: 6%;
 }
 
 .table-loose-stone-black-2 {
   width: 1.9rem;
   bottom: 10%;
-  left: 14%;
+  right: 14%;
 }
 
 /* Cover page: the closed book IS the homepage — no hero copy, just the book,
@@ -827,16 +842,44 @@ html:not([data-turn])::view-transition-new(book-page) {
   animation-duration: 120ms;
 }
 
-/* Cover opening: a heavier board, not a paper leaf, so book-page swings as a
-   single rigid plane on its own hinge here, untouched by the simplification. */
-html[data-turn="open"]::view-transition-old(book-page) {
+/* Closing the book ("Close the book" link back to the cover) is never
+   click-tagged, so it falls through to this same short crossfade rather than
+   reversing the rigid open-animation — simple and coherent without having to
+   mirror the physical open exactly. */
+html:not([data-turn])::view-transition-old(cover-page),
+html:not([data-turn])::view-transition-new(cover-page) {
+  animation-duration: 120ms;
+}
+
+/* Cover opening: a heavier board, not a paper leaf, so the cover swings as a
+   single rigid plane on its own hinge here, untouched by the interior-page
+   simplification below. cover-page (the closed book) and book-page (Contents
+   Page 1) are independent view-transition groups now, so each keyframe below
+   only has to describe its own element — no shared morph to fight. Stacking
+   cover-page above book-page keeps the cover visually on top while it swings
+   away, with Contents already sitting still underneath it, revealed rather
+   than itself animating in. perspective gives the rotation real
+   foreshortening instead of a flat orthographic skew. */
+html[data-turn="open"]::view-transition-group(cover-page) {
+  z-index: 2;
+  perspective: 120rem;
+}
+
+html[data-turn="open"]::view-transition-group(book-page) {
+  z-index: 1;
+}
+
+html[data-turn="open"]::view-transition-old(cover-page) {
   transform-origin: left center;
+  backface-visibility: hidden;
   animation: book-cover-open-out 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
 }
 
+/* Contents Page 1 is already physically underneath the cover, so its "entry"
+   is just a gentle reveal-fade, never a rotation — the rotating cover is what
+   sells the motion, not the page it's uncovering. */
 html[data-turn="open"]::view-transition-new(book-page) {
-  transform-origin: left center;
-  animation: book-cover-open-in 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
+  animation: book-page-reveal 500ms ease-out both;
 }
 
 /* Next: the current page eases a short distance left while fading out; the
@@ -920,6 +963,7 @@ html[data-turn="prev"]::view-transition-new(book-page) {
   }
 
   50% {
+    transform: rotateY(-100deg);
     filter: drop-shadow(-1.4rem 0.4rem 1.6rem rgb(10 8 20 / 45%));
   }
 
@@ -929,19 +973,17 @@ html[data-turn="prev"]::view-transition-new(book-page) {
   }
 }
 
-@keyframes book-cover-open-in {
+@keyframes book-page-reveal {
   0% {
-    transform: rotateY(165deg);
-    filter: drop-shadow(1.4rem 0.4rem 1.6rem rgb(10 8 20 / 45%));
+    opacity: 0;
   }
 
-  50% {
-    filter: drop-shadow(0.5rem 0.2rem 0.8rem rgb(10 8 20 / 25%));
+  40% {
+    opacity: 0;
   }
 
   100% {
-    transform: rotateY(0deg);
-    filter: drop-shadow(0 0 0 transparent);
+    opacity: 1;
   }
 }
 
