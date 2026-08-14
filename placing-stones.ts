@@ -2,6 +2,7 @@
 // colours starting with black. Deliberately simple — no liberties, no
 // capture, no restriction on where a stone can go.
 
+import { notifyMoveResult } from "./audio";
 import { renderGoBoard } from "./go-board";
 import { placeStone, type Board, type Point, type Stone } from "./go-rules";
 import { placingStonesLesson } from "./lesson-placing-stones";
@@ -42,6 +43,7 @@ function render(): void {
 
 function handleActivate(point: Point): void {
   const result = placeStone(board, point, toPlay);
+  notifyMoveResult(result);
   if (!result.ok) return;
 
   board = result.board;

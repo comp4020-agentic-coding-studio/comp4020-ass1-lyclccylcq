@@ -24,6 +24,7 @@
       <nav aria-label="Primary">
         <a href="./">Close the book</a>
         <a href="./contents.html">Contents</a>
+        <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false">Sound: on</button>
       </nav>
     </header>
     <main>
@@ -48,8 +49,10 @@
       <nav id="book-nav" aria-label="Chapter navigation"></nav>
     </footer>
     <script type="module">
+      import { mountSoundToggle } from "./audio.ts";
       import { mount } from "./book-nav.ts";
       mount("prologue", document.querySelector("#book-nav"));
+      mountSoundToggle(document.querySelector("#sound-toggle"));
     </script>
   </body>
 </html>

@@ -23,7 +23,7 @@
   --scene-bg: #e9dfc6;
   --table-wood-mid: #c1873f;
   --table-wood-dark: #8c5c26;
-  --table-wood-line: #4f3115;
+  --table-wood-line: #1f160d;
   --bowl-wood: #4a2f18;
   --bowl-wood-light: #6b4526;
   --leaf: #f1e6cf;
@@ -87,6 +87,34 @@ nav[aria-label="Primary"] {
   letter-spacing: 0.02em;
 }
 
+/* Global sound toggle (§Change 3): a plain nav item, not a settings panel, so
+   it sits alongside "Close the book"/"Contents" rather than competing with
+   them. Muted state is carried entirely by the text label and aria-pressed —
+   no icon/alt to keep in sync. */
+.sound-toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.sound-toggle:hover {
+  text-decoration: underline;
+}
+
+.sound-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.sound-toggle[aria-pressed="true"] {
+  opacity: 0.6;
+}
+
 main {
   max-width: 40rem;
   margin: 0 auto;
@@ -140,35 +168,138 @@ main {
     inset 0 0 0 1px rgb(0 0 0 / 15%);
 }
 
+/* A true 16x16 intersection grid (16 lines each axis) occupying almost all of
+   the wood square — decorative only, unrelated to the 9x9 lesson boards
+   rendered by go-board.ts, so this can't affect any lesson or the rules
+   engine. No hoshi: 16x16 has no canonical star points. */
 .table-board-grid {
   position: absolute;
-  inset: 6%;
+  inset: 1%;
 }
 
 .table-board-grid line {
   stroke: var(--table-wood-line);
-  stroke-width: 1;
-  opacity: 0.55;
+  stroke-width: 0.35;
+  stroke-linecap: round;
+  opacity: 0.88;
 }
 
 .table-board-grid circle {
   fill: var(--table-wood-line);
-  opacity: 0.6;
+  opacity: 0.88;
 }
 
+/* Bowls are major secondary objects (§7), not corner icons: sized well above
+   the board's own scale and pulled in toward it rather than left stranded at
+   the viewport edges. Slightly asymmetric placement (top/bottom/inset differ)
+   reads as a real table, not a mirrored UI layout. */
 .table-bowl {
   position: absolute;
-  width: clamp(4rem, 11vmin, 7rem);
+  width: clamp(11rem, 26vmin, 20rem);
 }
 
 .table-bowl-white {
-  top: 6%;
-  right: 8%;
+  top: 3%;
+  right: 11%;
 }
 
 .table-bowl-black {
-  bottom: 8%;
+  bottom: 4%;
+  left: 8%;
+}
+
+@media (width <= 47.99rem) {
+  /* Full bowls don't fit beside a near-full-width board on a phone; letting
+     them bleed off the edge (§12) reads as photographic cropping rather than
+     a shrunk-down icon. */
+  .table-bowl {
+    width: clamp(9rem, 34vmin, 13rem);
+  }
+
+  .table-bowl-white {
+    top: 1%;
+    right: -4%;
+  }
+
+  .table-bowl-black {
+    bottom: 2%;
+    left: -4%;
+  }
+}
+
+.table-bowl-shadow {
+  fill: rgb(20 12 4 / 30%);
+}
+
+.table-bowl-rim-highlight {
+  fill: none;
+  stroke: rgb(255 255 255 / 25%);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.table-bowl-stones-white {
+  fill: url("#stoneWhiteFill");
+  stroke: var(--label-border);
+  stroke-width: 0.6;
+}
+
+.table-bowl-stones-black {
+  fill: url("#stoneBlackFill");
+  stroke: rgb(255 255 255 / 12%);
+  stroke-width: 0.5;
+}
+
+/* Cheap per-stone lighting variety (§6) without hand-authoring extra gradient
+   stops for every circle in the pile. */
+.table-bowl-stones-white circle:nth-child(3n) {
+  filter: brightness(0.93);
+}
+
+.table-bowl-stones-black circle:nth-child(4n) {
+  filter: brightness(1.18);
+}
+
+/* A few loose stones beside each bowl (§8) — plain CSS circles, not SVG, so
+   this stays a handful of DOM nodes rather than another asset. */
+.table-loose-stone {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 0.15rem 0.3rem rgb(20 12 4 / 35%);
+}
+
+.table-loose-stone-black {
+  background: radial-gradient(circle at 35% 28%, #4a4a4a, #0a0a0a 75%);
+}
+
+.table-loose-stone-white {
+  background: radial-gradient(circle at 35% 28%, #fffdf6 0%, #efe6cf 55%, #c9bd9d 100%);
+  border: 1px solid var(--label-border);
+}
+
+.table-loose-stone-white-1 {
+  width: 2.4rem;
+  top: 15%;
+  right: 8%;
+}
+
+.table-loose-stone-white-2 {
+  width: 1.9rem;
+  top: 20%;
+  right: 15%;
+}
+
+.table-loose-stone-black-1 {
+  width: 2.4rem;
+  bottom: 16%;
   left: 6%;
+}
+
+.table-loose-stone-black-2 {
+  width: 1.9rem;
+  bottom: 10%;
+  left: 14%;
 }
 
 /* Cover page: the closed book IS the homepage — no hero copy, just the book,
@@ -266,33 +397,35 @@ main {
   fill: var(--cloth-dark);
 }
 
-.cover-book-thread line {
+.cover-book-art .cover-book-thread line {
   stroke: rgb(245 240 225 / 55%);
   stroke-width: 1.5;
 }
 
-.cover-book-thread circle {
+.cover-book-art .cover-book-thread circle {
   fill: rgb(245 240 225 / 80%);
 }
 
 /* A single small kifu fragment (§2): a printed game-record insert pasted to
    one corner of the cloth, not a board-wide grid — restrained enough to read
-   as an antique illustration rather than UI decoration. */
+   as an antique illustration rather than UI decoration. Real filled black
+   and white stones, no move numbers, so it reads as a miniature Go position
+   rather than a generic grid ornament. */
 .cover-kifu-grid {
-  stroke: rgb(255 255 255 / 18%);
+  stroke: rgb(255 255 255 / 20%);
   stroke-width: 1;
 }
 
-.cover-kifu-stone circle {
-  fill: none;
-  stroke: rgb(255 255 255 / 42%);
-  stroke-width: 1.2;
+.cover-kifu-stone-black {
+  fill: #16130f;
+  stroke: rgb(255 255 255 / 14%);
+  stroke-width: 0.6;
 }
 
-.cover-kifu-stone text {
-  fill: rgb(255 255 255 / 50%);
-  font-family: inherit;
-  font-size: 9px;
+.cover-kifu-stone-white {
+  fill: var(--label-paper);
+  stroke: var(--label-border);
+  stroke-width: 1;
 }
 
 /* Pasted title-slip label: a warm ivory paper strip toward the right side,
@@ -313,40 +446,30 @@ main {
   justify-content: center;
 }
 
-/* English title, brush-styled without any font-family dependency (§3): the
-   Latin text runs sideways along the slip (writing-mode's default 'mixed'
-   text-orientation, not 'upright', which is right for CJK but stacks Latin
-   letters awkwardly), then an SVG filter (defined in .cover-book-art's
-   <defs>) roughens its edges with turbulence-driven displacement — a
-   dry-brush look with no reliance on any locally-installed calligraphy font,
-   since none exists in this project and the grading browser can't be
-   assumed to have one either. */
+/* Chinese title-slip text (§2): vertical-rl's default 'mixed' text-orientation
+   keeps CJK glyphs upright (top-to-bottom reading order) with no orientation
+   override needed — unlike the Latin title this replaces, which had to be
+   rotated sideways. Font stack leads with the CJK serif fallbacks already
+   used for the chapter kickers (Songti SC / Noto Serif SC — present on the
+   grading browser without a webfont asset), falling back to a plain serif
+   rather than any unreliable/decorative face, so the characters always
+   render. The same ink-brush SVG filter (defined in .cover-book-art's
+   <defs>) gives it a dry-brush, printed-manual texture at a gentler
+   displacement scale than the old Latin title needed, so the strokes stay
+   legible. */
 .cover-book-label-text {
   writing-mode: vertical-rl;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Songti SC", "Noto Serif SC", Georgia, serif;
   font-weight: 700;
-  font-style: italic;
-  font-size: 9cqw;
-  letter-spacing: 0.06em;
+  font-size: 11cqw;
+  letter-spacing: 0.12em;
   color: var(--label-border);
   filter: url("#ink-brush");
 }
 
-.cover-enter-text {
-  font-size: 1rem;
-  letter-spacing: 0.03em;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.15s ease;
-}
-
-.cover-enter:hover .cover-enter-text,
-.cover-enter:focus-visible .cover-enter-text {
-  border-color: var(--accent);
-}
-
 /* Shared interior page material (§11/§13): aged, faintly fibrous paper for
-   any open-book page. Kept independent of .book-open's two-page layout so a
-   future Prologue/lesson page can adopt just the material. */
+   any open-book page. Kept independent of .book-open's sizing so a future
+   Prologue/lesson page can adopt just the material. */
 .leaf {
   background-color: var(--leaf);
   background-image:
@@ -359,42 +482,21 @@ main {
   padding: 2.5rem 3rem 3rem;
 }
 
-main.book-open-shell {
-  max-width: 64rem;
-}
-
-/* Open-book spread (§11): one continuous leaf, split into two reading
-   columns with a shadowed centre gutter standing in for the spine — simpler
-   and more robust than two separately-positioned page elements, and it still
-   collapses to a single column on mobile (§22) by just dropping the columns
-   and the gutter. */
+/* Contents is one interior page, not an open two-page spread (§Change 2): it
+   must occupy exactly the same footprint as the closed cover so Cover ->
+   Contents never widens or re-centres the book — only the page content
+   changes underneath the (unmoved) cover-sized silhouette. Reusing
+   .cover-book's own width/aspect-ratio formula verbatim, rather than merely
+   approximating it, guarantees they match at every viewport by construction. */
 .book-open {
-  position: relative;
-  isolation: isolate;
-}
-
-.book-open::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 3rem;
-  margin-left: -1.5rem;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgb(0 0 0 / 10%) 45%,
-    rgb(0 0 0 / 16%) 50%,
-    rgb(0 0 0 / 10%) 55%,
-    transparent
-  );
-  pointer-events: none;
+  width: clamp(16rem, 48vw, 30rem);
+  aspect-ratio: 5 / 7;
+  margin: 0 auto;
 }
 
 .book-open-heading {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 /* Chapter numbering, shared by the contents list and every chapter page. A
@@ -412,30 +514,21 @@ main.book-open-shell {
 }
 
 @media (width <= 47.99rem) {
-  .book-open::before {
-    display: none;
-  }
-
   .leaf {
     padding: 1.75rem 1.25rem 2rem;
   }
 }
 
-/* Contents: a printed table of contents — rows separated by a rule, not
-   cards. Generous vertical whitespace stands in for a page-number column. */
+/* Contents: a printed table of contents on a single page — rows separated by
+   a rule, not cards or columns. Tight vertical rhythm keeps all 8 rows on one
+   page at the cover's narrow width; aspect-ratio's height:auto still lets the
+   page grow taller (never clip) if a narrow phone needs more room than 5:7
+   allows. */
 .contents-list {
   list-style: none;
   padding: 0;
-  margin: 2rem 0 0;
+  margin: 1.75rem 0 0;
   border-top: 1px solid var(--rule);
-  column-count: 2;
-  column-gap: 3rem;
-}
-
-@media (width <= 47.99rem) {
-  .contents-list {
-    column-count: 1;
-  }
 }
 
 .contents-list li {
@@ -443,13 +536,12 @@ main.book-open-shell {
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
-  padding: 1.1rem 0;
+  padding: 0.7rem 0;
   border-bottom: 1px solid var(--rule);
-  break-inside: avoid;
 }
 
 .contents-list li.contents-prologue {
-  padding: 0.85rem 0;
+  padding: 0.55rem 0;
   font-size: 0.95rem;
   color: var(--accent);
 }

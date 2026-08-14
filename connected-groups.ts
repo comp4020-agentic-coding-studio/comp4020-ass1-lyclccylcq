@@ -5,6 +5,7 @@
 // There is no separate "allowed points" list: every empty point stays
 // clickable, and an illegal click just leaves the board exactly as it was.
 
+import { notifyMoveResult } from "./audio";
 import { renderGoBoard } from "./go-board";
 import { getGroup, getLiberties, getStone, placeStone, type Board, type Point } from "./go-rules";
 import {
@@ -149,6 +150,7 @@ export function mount(elements: LessonElements): void {
     }
 
     const result = placeStone(board, point, "white");
+    notifyMoveResult(result);
     if (!result.ok) {
       setFeedback(illegalMoveFeedback(result.reason));
       return;

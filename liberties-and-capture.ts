@@ -3,6 +3,7 @@
 // go-rules.ts decides what's legal and what gets captured; go-board.ts only
 // draws whatever state it's given.
 
+import { notifyMoveResult } from "./audio";
 import { renderGoBoard } from "./go-board";
 import { getGroup, getLiberties, placeStone, type Board, type Point } from "./go-rules";
 import { libertiesAndCaptureLesson, TARGET } from "./lesson-liberties-capture";
@@ -37,6 +38,7 @@ function render(): void {
 
 function handleActivate(point: Point): void {
   const result = placeStone(board, point, "white");
+  notifyMoveResult(result);
   if (!result.ok) return;
   board = result.board;
   render();

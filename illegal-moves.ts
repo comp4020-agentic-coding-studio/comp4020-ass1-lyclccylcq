@@ -6,6 +6,7 @@
 // outcome in text. An illegal attempt never touches the board: no stone is
 // placed, so there is nothing to undo and nothing to visually mark.
 
+import { notifyMoveResult } from "./audio";
 import { renderGoBoard } from "./go-board";
 import { getGroup, getLiberties, getStone, placeStone, type Board, type Point } from "./go-rules";
 import {
@@ -142,6 +143,7 @@ export function mount(elements: LessonElements): void {
     }
 
     const result = placeStone(board, point, "black");
+    notifyMoveResult(result);
     if (!result.ok) {
       if (exampleIndex === 0) attempted = true;
       render();

@@ -6,6 +6,7 @@
 // nothing to undo and nothing to visually mark: the ko point stays a plain
 // empty intersection throughout.
 
+import { notifyMoveResult } from "./audio";
 import { renderGoBoard } from "./go-board";
 import { placeStone, type Board, type Point } from "./go-rules";
 import { CAPTURE_POINT, ELSEWHERE_POINT, KO_POINT, createKoBoard, koLesson } from "./lesson-ko";
@@ -87,6 +88,7 @@ export function mount(elements: LessonElements): void {
     if (stage === "capture") {
       if (!pointsEqual(point, CAPTURE_POINT)) return;
       const result = placeStone(board, point, "black");
+      notifyMoveResult(result);
       if (!result.ok) return;
       koBoard = board;
       board = result.board;
@@ -98,6 +100,7 @@ export function mount(elements: LessonElements): void {
     if (stage === "blocked") {
       if (pointsEqual(point, KO_POINT)) {
         const result = placeStone(board, KO_POINT, "white", koBoard ?? undefined);
+        notifyMoveResult(result);
         if (!result.ok) {
           attemptedRecapture = true;
           render();
@@ -111,6 +114,7 @@ export function mount(elements: LessonElements): void {
       }
       if (attemptedRecapture && pointsEqual(point, ELSEWHERE_POINT)) {
         const result = placeStone(board, point, "white", koBoard ?? undefined);
+        notifyMoveResult(result);
         if (!result.ok) return;
         koBoard = board;
         board = result.board;
@@ -124,6 +128,7 @@ export function mount(elements: LessonElements): void {
     if (stage === "retake") {
       if (!pointsEqual(point, KO_POINT)) return;
       const result = placeStone(board, KO_POINT, "white", koBoard ?? undefined);
+      notifyMoveResult(result);
       if (!result.ok) return;
       board = result.board;
       solved = true;
