@@ -130,6 +130,41 @@ main {
   z-index: 1;
 }
 
+/* Page-turn decorative layers (§6, §8, §14): two extra named elements living
+   inside main, always fully rendered (so their view-transition snapshot has
+   real content to animate) but pinned behind main's real content at rest via
+   a negative z-index — the browser captures each named element as its own
+   independent snapshot regardless of what's drawn over it in the live page,
+   so this "hidden behind" trick has zero effect on the transition itself,
+   only on ordinary, non-transitioning browsing. Sized to main's own box
+   (not the viewport) so they can never peek out past main's own footprint,
+   the same way the existing book-page name already lives on main itself. */
+.page-back,
+.page-fold-shadow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  backface-visibility: hidden;
+}
+
+.page-back {
+  view-transition-name: page-back;
+  padding: 0;
+}
+
+.page-fold-shadow {
+  view-transition-name: page-fold-shadow;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgb(20 12 4 / 35%) 46%,
+    rgb(20 12 4 / 35%) 54%,
+    transparent 100%
+  );
+  mix-blend-mode: multiply;
+}
+
 /* Tabletop backdrop (§5–§9): a fixed, viewport-anchored wood Go board and
    bowls behind the book. It carries no view-transition-name of its own —
    since it renders identically on the cover and on Contents, it's simply
@@ -789,66 +824,78 @@ main.spread {
   animation: none;
 }
 
-/* 3D physical page turn (§14–§21): the book itself never moves — only the
-   view-transition snapshots of the *page* rotate, hinged at the spine, with
-   perspective so the rotation actually reads as depth instead of a squash.
-   perspective lives on the image-pair pseudo (the shared parent of the old
-   and new snapshots), which is where the spec places it for exactly this
-   reason: a perspective set on an ancestor of the rotated elements. */
-::view-transition-image-pair(book-page) {
-  perspective: 2000px;
+/* Layered page curl (§1–§21): three independently named snapshots choreographed
+   together — book-page (front content), page-back (aged blank reverse face),
+   page-fold-shadow (a travelling shadow at the fold) — replace the old single
+   rigid rotateY plane. Cross-name stacking is fixed here and shared by both
+   directions, since which side (old/new) does the animating is what flips
+   between next/prev, not which name sits on top of which. */
+::view-transition-group(book-page) {
+  z-index: 3;
+}
+
+::view-transition-group(page-back) {
+  z-index: 2;
+}
+
+::view-transition-group(page-fold-shadow) {
+  z-index: 1;
 }
 
 ::view-transition-old(book-page),
-::view-transition-new(book-page) {
+::view-transition-new(book-page),
+::view-transition-old(page-back),
+::view-transition-new(page-back) {
   backface-visibility: hidden;
 }
 
-/* A direct jump (contents list, header nav) never tags a direction, so it
-   keeps the browser's default crossfade — just shortened, per §8's "direct
-   contents navigation may use a shorter transition." */
-html:not([data-turn]) ::view-transition-old(book-page),
-html:not([data-turn]) ::view-transition-new(book-page) {
+/* A direct jump (contents list, header nav) never tags a direction: book-page
+   keeps its short default crossfade, and the two curl-only layers stay fully
+   suppressed since there is no fold to draw for a plain cut. */
+html:not([data-turn])::view-transition-old(book-page),
+html:not([data-turn])::view-transition-new(book-page) {
   animation-duration: 120ms;
 }
 
-html[data-turn="next"] ::view-transition-old(book-page),
-html[data-turn="next"] ::view-transition-new(book-page),
-html[data-turn="open"] ::view-transition-old(book-page),
-html[data-turn="open"] ::view-transition-new(book-page) {
+html:not([data-turn])::view-transition-old(page-back),
+html:not([data-turn])::view-transition-new(page-back),
+html:not([data-turn])::view-transition-old(page-fold-shadow),
+html:not([data-turn])::view-transition-new(page-fold-shadow) {
+  animation: none;
+  opacity: 0;
+}
+
+/* The cover has no curl layers of its own, so suppress Contents' "new" side
+   of each to prevent any stray flash while the cover swings away — §12's
+   cover keeps its own separate, untouched keyframes below. */
+html[data-turn="open"]::view-transition-old(page-back),
+html[data-turn="open"]::view-transition-new(page-back),
+html[data-turn="open"]::view-transition-old(page-fold-shadow),
+html[data-turn="open"]::view-transition-new(page-fold-shadow) {
+  animation: none;
+  opacity: 0;
+}
+
+html[data-turn="next"]::view-transition-old(book-page),
+html[data-turn="next"]::view-transition-new(book-page),
+html[data-turn="next"]::view-transition-old(page-back),
+html[data-turn="next"]::view-transition-new(page-back),
+html[data-turn="open"]::view-transition-old(book-page),
+html[data-turn="open"]::view-transition-new(book-page) {
   transform-origin: left center;
 }
 
-html[data-turn="prev"] ::view-transition-old(book-page),
-html[data-turn="prev"] ::view-transition-new(book-page) {
+html[data-turn="prev"]::view-transition-old(book-page),
+html[data-turn="prev"]::view-transition-new(book-page),
+html[data-turn="prev"]::view-transition-old(page-back),
+html[data-turn="prev"]::view-transition-new(page-back) {
   transform-origin: right center;
 }
 
-/* Sequential Prev/Next: the outgoing page lifts off the spine and swings
-   past 90° out of view; the incoming page starts back-facing (hidden by
-   backface-visibility) and swings down into place. Direction is set purely
-   by which pair of keyframes runs — next and prev are mirror images of each
-   other, never the same animation played backwards. */
-html[data-turn="next"]::view-transition-old(book-page) {
-  animation: book-page-turn-out-next 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
-}
-
-html[data-turn="next"]::view-transition-new(book-page) {
-  animation: book-page-turn-in-next 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
-}
-
-html[data-turn="prev"]::view-transition-old(book-page) {
-  animation: book-page-turn-out-prev 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
-}
-
-html[data-turn="prev"]::view-transition-new(book-page) {
-  animation: book-page-turn-in-prev 550ms cubic-bezier(0.45, 0, 0.2, 1) both;
-}
-
-/* Cover opening (§20): a slightly larger, slower rotation than an ordinary
-   page turn, since it's a heavier cover board rather than a paper leaf. The
-   Contents spread underneath is already fully rendered as the incoming
-   snapshot — nothing fades, the cover just swings away from it. */
+/* Cover opening (§20): a heavier board, not a paper leaf, so book-page swings
+   as a single rigid plane here rather than joining the layered curl — no
+   back face or fold shadow to reveal, which is exactly why both are
+   suppressed above for this direction. */
 html[data-turn="open"]::view-transition-old(book-page) {
   animation: book-cover-open-out 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
 }
@@ -857,67 +904,259 @@ html[data-turn="open"]::view-transition-new(book-page) {
   animation: book-cover-open-in 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
 }
 
-@keyframes book-page-turn-out-next {
-  0% {
-    transform: rotateY(0deg);
-    filter: drop-shadow(0 0 0 transparent);
-  }
-
-  55% {
-    filter: drop-shadow(-0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
-  }
-
-  100% {
-    transform: rotateY(-160deg);
-    filter: drop-shadow(0 0 0 transparent);
-  }
+/* Next (§4–§9): the destination is already the visible "new" book-page —
+   static from frame 0, z-index below everything else, nothing fades or pops
+   in underneath it. Everything that moves is the outgoing "old" side: the
+   front face rotates off the spine while its visible width narrows from the
+   free (right) edge inward (clip-path, not just rotation, so the edge really
+   travels rather than the whole rectangle just tilting); the back face stays
+   hidden past its own 90° until right around when the front face passes its
+   own 90°, so one takes over from the other with no dead gap; the fold
+   shadow travels with that same boundary and fades in and out across bands
+   roughly matching §8's 0/20–40/40–65/65–90/100 progression. */
+html[data-turn="next"]::view-transition-new(book-page) {
+  animation: none;
+  opacity: 1;
+  z-index: 0;
 }
 
-@keyframes book-page-turn-in-next {
+html[data-turn="next"]::view-transition-old(book-page) {
+  z-index: 3;
+  animation: page-curl-content-next 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-turn="next"]::view-transition-old(page-back) {
+  animation: page-curl-back-next 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-turn="next"]::view-transition-old(page-fold-shadow) {
+  animation: page-curl-shadow-next 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-turn="next"]::view-transition-new(page-back),
+html[data-turn="next"]::view-transition-new(page-fold-shadow) {
+  animation: none;
+  opacity: 0;
+}
+
+/* Prev (§11): a genuine mirror, not the next keyframes played in reverse —
+   the hinge moves to the right edge, the free edge now travels left → right,
+   and it's the incoming "new" side that does the turning while the outgoing
+   "old" side is the static destination already sitting there. */
+html[data-turn="prev"]::view-transition-old(book-page) {
+  animation: none;
+  opacity: 1;
+  z-index: 0;
+}
+
+html[data-turn="prev"]::view-transition-new(book-page) {
+  z-index: 3;
+  animation: page-curl-content-prev 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-turn="prev"]::view-transition-new(page-back) {
+  animation: page-curl-back-prev 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-turn="prev"]::view-transition-new(page-fold-shadow) {
+  animation: page-curl-shadow-prev 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-turn="prev"]::view-transition-old(page-back),
+html[data-turn="prev"]::view-transition-old(page-fold-shadow) {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes page-curl-content-next {
   0% {
-    transform: rotateY(160deg);
-    filter: drop-shadow(0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
+    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scaleX(1);
+    clip-path: inset(0 0% 0 0);
+  }
+
+  18% {
+    animation-timing-function: cubic-bezier(0.3, 0, 0.4, 1);
+    transform: perspective(1600px) rotateY(-24deg) skewY(-1deg) scaleX(0.99);
+    clip-path: inset(0 5% 0 0);
   }
 
   45% {
-    filter: drop-shadow(0.4rem 0.1rem 0.6rem rgb(20 12 4 / 22%));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
+    transform: perspective(1600px) rotateY(-74deg) skewY(-2.5deg) scaleX(0.94);
+    clip-path: inset(0 36% 0 0);
+  }
+
+  68% {
+    transform: perspective(1600px) rotateY(-98deg) skewY(-1deg) scaleX(0.92);
+    clip-path: inset(0 58% 0 0);
+  }
+
+  88% {
+    animation-timing-function: ease-out;
+    transform: perspective(1600px) rotateY(-140deg) skewY(0deg) scaleX(0.9);
+    clip-path: inset(0 82% 0 0);
   }
 
   100% {
-    transform: rotateY(0deg);
-    filter: drop-shadow(0 0 0 transparent);
+    transform: perspective(1600px) rotateY(-172deg) skewY(0deg) scaleX(0.9);
+    clip-path: inset(0 100% 0 0);
   }
 }
 
-@keyframes book-page-turn-out-prev {
+@keyframes page-curl-back-next {
   0% {
-    transform: rotateY(0deg);
-    filter: drop-shadow(0 0 0 transparent);
+    transform: perspective(1600px) rotateY(102deg) scaleX(0.9);
+    clip-path: inset(0 0 0 100%);
   }
 
-  55% {
-    filter: drop-shadow(0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
-  }
-
-  100% {
-    transform: rotateY(160deg);
-    filter: drop-shadow(0 0 0 transparent);
-  }
-}
-
-@keyframes book-page-turn-in-prev {
-  0% {
-    transform: rotateY(-160deg);
-    filter: drop-shadow(-0.9rem 0.2rem 1.1rem rgb(20 12 4 / 40%));
+  18% {
+    transform: perspective(1600px) rotateY(96deg) scaleX(0.9);
+    clip-path: inset(0 0 0 95%);
   }
 
   45% {
-    filter: drop-shadow(-0.4rem 0.1rem 0.6rem rgb(20 12 4 / 22%));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
+    transform: perspective(1600px) rotateY(70deg) scaleX(0.93);
+    clip-path: inset(0 0 0 64%);
+  }
+
+  68% {
+    transform: perspective(1600px) rotateY(30deg) scaleX(0.95);
+    clip-path: inset(0 0 0 42%);
+  }
+
+  88% {
+    animation-timing-function: ease-out;
+    transform: perspective(1600px) rotateY(-8deg) scaleX(0.97);
+    clip-path: inset(0 0 0 18%);
   }
 
   100% {
-    transform: rotateY(0deg);
-    filter: drop-shadow(0 0 0 transparent);
+    transform: perspective(1600px) rotateY(-24deg) scaleX(0.98);
+    clip-path: inset(0 0 0 0%);
+  }
+}
+
+@keyframes page-curl-shadow-next {
+  0% {
+    opacity: 0;
+    transform: translateX(38%);
+  }
+
+  30% {
+    opacity: 0.5;
+    transform: translateX(14%);
+  }
+
+  52% {
+    opacity: 0.85;
+    transform: translateX(-6%);
+  }
+
+  78% {
+    opacity: 0.3;
+    transform: translateX(-32%);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-55%);
+  }
+}
+
+@keyframes page-curl-content-prev {
+  0% {
+    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scaleX(1);
+    clip-path: inset(0 0 0 0%);
+  }
+
+  18% {
+    animation-timing-function: cubic-bezier(0.3, 0, 0.4, 1);
+    transform: perspective(1600px) rotateY(24deg) skewY(1deg) scaleX(0.99);
+    clip-path: inset(0 0 0 5%);
+  }
+
+  45% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
+    transform: perspective(1600px) rotateY(74deg) skewY(2.5deg) scaleX(0.94);
+    clip-path: inset(0 0 0 36%);
+  }
+
+  68% {
+    transform: perspective(1600px) rotateY(98deg) skewY(1deg) scaleX(0.92);
+    clip-path: inset(0 0 0 58%);
+  }
+
+  88% {
+    animation-timing-function: ease-out;
+    transform: perspective(1600px) rotateY(140deg) skewY(0deg) scaleX(0.9);
+    clip-path: inset(0 0 0 82%);
+  }
+
+  100% {
+    transform: perspective(1600px) rotateY(172deg) skewY(0deg) scaleX(0.9);
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+@keyframes page-curl-back-prev {
+  0% {
+    transform: perspective(1600px) rotateY(-102deg) scaleX(0.9);
+    clip-path: inset(0 100% 0 0);
+  }
+
+  18% {
+    transform: perspective(1600px) rotateY(-96deg) scaleX(0.9);
+    clip-path: inset(0 95% 0 0);
+  }
+
+  45% {
+    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
+    transform: perspective(1600px) rotateY(-70deg) scaleX(0.93);
+    clip-path: inset(0 64% 0 0);
+  }
+
+  68% {
+    transform: perspective(1600px) rotateY(-30deg) scaleX(0.95);
+    clip-path: inset(0 42% 0 0);
+  }
+
+  88% {
+    animation-timing-function: ease-out;
+    transform: perspective(1600px) rotateY(8deg) scaleX(0.97);
+    clip-path: inset(0 18% 0 0);
+  }
+
+  100% {
+    transform: perspective(1600px) rotateY(24deg) scaleX(0.98);
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+@keyframes page-curl-shadow-prev {
+  0% {
+    opacity: 0;
+    transform: translateX(-38%);
+  }
+
+  30% {
+    opacity: 0.5;
+    transform: translateX(-14%);
+  }
+
+  52% {
+    opacity: 0.85;
+    transform: translateX(6%);
+  }
+
+  78% {
+    opacity: 0.3;
+    transform: translateX(32%);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(55%);
   }
 }
 
@@ -956,9 +1195,9 @@ html[data-turn="open"]::view-transition-new(book-page) {
 /* §6: reduced motion keeps a transition (so the incoming page isn't a jarring
    pop-in) but drops the physical rotate/slide for a near-instant fade. */
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
+ ::view-transition-group(*),
+ ::view-transition-old(*),
+ ::view-transition-new(*) {
     animation-duration: 1ms !important;
     animation-delay: 0s !important;
   }
