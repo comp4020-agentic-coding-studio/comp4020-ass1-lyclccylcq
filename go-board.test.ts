@@ -84,6 +84,98 @@ describe("rendering at 19x19", () => {
   });
 });
 
+// The last-move dot is drawn here rather than by each lesson, so these are
+// the tests that pin its behaviour for every board in the book at once.
+describe("the last-move marker", () => {
+  function markerAt(doc: Document): { at: string; colour: string } | null {
+    const dot = doc.querySelector("circle.go-board-last-move");
+    if (!dot) return null;
+    const colour = dot.classList.contains("go-board-last-move-black") ? "black" : "white";
+    return { at: `${dot.getAttribute("cy")},${dot.getAttribute("cx")}`, colour };
+  }
+
+  function boardWith(stones: Array<[number, number, "black" | "white"]>): Board {
+    const board = createBoard(9);
+    for (const [row, col, colour] of stones) board.cells[row][col] = colour;
+    return board;
+  }
+
+  it("draws nothing when the caller names no last move", () => {
+    const { doc, container } = setUp();
+    renderGoBoard(container, { board: boardWith([[2, 3, "black"]]) });
+    expect(markerAt(doc)).toBeNull();
+  });
+
+  it("contrasts against the stone it sits on, so it reads on either colour", () => {
+    const { doc, container } = setUp();
+    const board = boardWith([
+      [2, 3, "black"],
+      [4, 5, "white"],
+    ]);
+
+    renderGoBoard(container, { board, lastMove: { row: 2, col: 3 } });
+    // A black stone takes the light dot, a white stone the dark one.
+    expect(markerAt(doc)).toEqual({ at: "2,3", colour: "black" });
+
+    renderGoBoard(container, { board, lastMove: { row: 4, col: 5 } });
+    expect(markerAt(doc)).toEqual({ at: "4,5", colour: "white" });
+  });
+
+  it("marks exactly one point, and moves rather than accumulating", () => {
+    const { doc, container } = setUp();
+    const board = boardWith([
+      [2, 3, "black"],
+      [4, 5, "white"],
+    ]);
+
+    renderGoBoard(container, { board, lastMove: { row: 2, col: 3 } });
+    renderGoBoard(container, { board, lastMove: { row: 4, col: 5 } });
+
+    expect(doc.querySelectorAll("circle.go-board-last-move")).toHaveLength(1);
+    expect(markerAt(doc)?.at).toBe("4,5");
+  });
+
+  it("ignores a last move on a point no stone occupies, e.g. one just captured", () => {
+    const { doc, container } = setUp();
+    renderGoBoard(container, { board: boardWith([[2, 3, "black"]]), lastMove: { row: 6, col: 6 } });
+    expect(markerAt(doc)).toBeNull();
+  });
+
+  it("stays out of the way: decorative, and never intercepts a click", () => {
+    const { doc, container } = setUp();
+    renderGoBoard(container, { board: boardWith([[2, 3, "black"]]), lastMove: { row: 2, col: 3 } });
+
+    const dot = doc.querySelector("circle.go-board-last-move");
+    expect(dot?.getAttribute("aria-hidden")).toBe("true");
+    // Small enough to sit inside the stone rather than ring or cover it.
+    expect(Number(dot?.getAttribute("r"))).toBeLessThan(0.42 / 2);
+  });
+
+  it("says so in the point's own label, so it isn't carried by the dot alone", () => {
+    const { doc, container } = setUp();
+    renderGoBoard(container, { board: boardWith([[2, 3, "black"]]), lastMove: { row: 2, col: 3 } });
+
+    const point = doc.querySelector('circle.go-board-point[cx="3"][cy="2"]');
+    expect(point?.getAttribute("aria-label")).toBe("Row 3, column 4: black stone — last move");
+  });
+
+  it("leaves every other point's label untouched", () => {
+    const { doc, container } = setUp();
+    renderGoBoard(container, {
+      board: boardWith([
+        [2, 3, "black"],
+        [4, 5, "white"],
+      ]),
+      lastMove: { row: 2, col: 3 },
+    });
+
+    expect(doc.querySelector('circle.go-board-point[cx="5"][cy="4"]')?.getAttribute("aria-label")).toBe(
+      "Row 5, column 6: white stone",
+    );
+    expect(doc.querySelectorAll('[aria-label*="last move"]')).toHaveLength(1);
+  });
+});
+
 describe("the rules engine at 19x19", () => {
   it("creates a genuinely empty 361-point board", () => {
     const board = createBoard(19);

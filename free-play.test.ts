@@ -91,6 +91,11 @@ function disabled(doc: Document, id: string): boolean {
   return doc.querySelector<HTMLButtonElement>(`#${id}`)?.disabled ?? false;
 }
 
+function lastMoveAt(doc: Document): string | null {
+  const dot = doc.querySelector("circle.go-board-last-move");
+  return dot ? `${dot.getAttribute("cy")},${dot.getAttribute("cx")}` : null;
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -150,6 +155,48 @@ describe("taking turns", () => {
     expect(stones(doc, "black")).toBe(1);
     expect(stones(doc, "white")).toBe(whiteStones);
     expect(status(doc)).toContain("you are Black");
+  });
+});
+
+describe("the last-move marker", () => {
+  it("starts absent, then follows the human's stone", () => {
+    const { doc, window } = setUp();
+    expect(lastMoveAt(doc)).toBeNull();
+
+    click(doc, window, 3, 3);
+    expect(lastMoveAt(doc)).toBe("3,3");
+  });
+
+  it("moves to the opponent's stone when the bot replies", () => {
+    const { doc, window, letOpponentMove } = setUp();
+    click(doc, window, 3, 3);
+    letOpponentMove();
+
+    expect(doc.querySelectorAll("circle.go-board-last-move")).toHaveLength(1);
+    expect(lastMoveAt(doc)).not.toBe("3,3");
+  });
+
+  it("stays put when a move is refused", () => {
+    const { doc, window, letOpponentMove } = setUp();
+    click(doc, window, 3, 3);
+    letOpponentMove();
+    const afterBot = lastMoveAt(doc);
+
+    click(doc, window, 3, 3); // occupied — refused
+    expect(lastMoveAt(doc)).toBe(afterBot);
+  });
+
+  it("rewinds with undo, and clears on a new game", () => {
+    const { doc, window, letOpponentMove } = setUp();
+    click(doc, window, 3, 3);
+    letOpponentMove();
+
+    press(doc, window, "free-play-undo");
+    expect(lastMoveAt(doc)).toBeNull();
+
+    click(doc, window, 9, 9);
+    press(doc, window, "free-play-new");
+    expect(lastMoveAt(doc)).toBeNull();
   });
 });
 

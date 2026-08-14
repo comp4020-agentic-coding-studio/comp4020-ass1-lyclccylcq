@@ -36,6 +36,7 @@ interface Snapshot {
   koBoard: Board | null;
   toMove: Stone;
   consecutivePasses: number;
+  lastMove: Point | null;
 }
 
 const THINKING_MIN_MS = 300;
@@ -58,6 +59,7 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
   // Simple ko, exactly as the lessons use it: the position as it stood before
   // the opponent's last move, handed straight to placeStone.
   let koBoard: Board | null = null;
+  let lastMove: Point | null = null;
   let consecutivePasses = 0;
   let history: Snapshot[] = [];
   let thinking = false;
@@ -67,7 +69,7 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
   let generation = 0;
 
   function snapshot(): Snapshot {
-    return { board, koBoard, toMove, consecutivePasses };
+    return { board, koBoard, toMove, consecutivePasses, lastMove };
   }
 
   function restore(state: Snapshot): void {
@@ -75,6 +77,7 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
     koBoard = state.koBoard;
     toMove = state.toMove;
     consecutivePasses = state.consecutivePasses;
+    lastMove = state.lastMove;
     finished = false;
   }
 
@@ -119,6 +122,7 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
     renderGoBoard(boardEl, {
       board,
       interactive: humanCanMove() ? emptyPoints() : [],
+      lastMove,
       onPointActivate: (point) => handleHumanMove(point),
     });
 
@@ -138,6 +142,7 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
     history.push(snapshot());
     koBoard = board;
     board = result.board;
+    lastMove = point;
     consecutivePasses = 0;
     toMove = other(humanColour);
     startReply();
@@ -186,9 +191,10 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
       const result = placeStone(board, chosen, botColour, koBoard ?? undefined);
       notifyMoveResult(result);
       if (result.ok) {
-        history.push({ board, koBoard, toMove: botColour, consecutivePasses });
+        history.push({ board, koBoard, toMove: botColour, consecutivePasses, lastMove });
         koBoard = board;
         board = result.board;
+        lastMove = chosen;
         consecutivePasses = 0;
       } else {
         // The bot only ever offers moves it has already validated, so a
@@ -221,6 +227,7 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
     board = createBoard(BOARD_SIZE);
     toMove = "black";
     koBoard = null;
+    lastMove = null;
     consecutivePasses = 0;
     history = [];
     thinking = false;

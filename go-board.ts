@@ -31,11 +31,17 @@ export interface RenderOptions {
    * (e.g. territory ownership) — distinct from `highlights`, which is a
    * single undifferentiated set. */
   markers?: PointMarker[];
+  /** The stone played most recently, marked the way a physical board is: a
+   * small contrasting dot in the centre of that stone. The caller decides
+   * what "most recently" means — the rules engine keeps no history — but the
+   * dot is drawn here so every board in the book marks it identically.
+   * Ignored if the point is empty. */
+  lastMove?: Point | null;
   onPointActivate?: (point: Point) => void;
 }
 
 export function renderGoBoard(container: HTMLElement, options: RenderOptions): void {
-  const { board, highlights = [], interactive = [], markers = [], onPointActivate } = options;
+  const { board, highlights = [], interactive = [], markers = [], lastMove = null, onPointActivate } = options;
   const size = board.size;
   const last = size - 1;
   const interactiveSet = new Set(interactive.map(pointKey));
@@ -70,8 +76,14 @@ export function renderGoBoard(container: HTMLElement, options: RenderOptions): v
       const point: Point = { row, col };
       const stone = board.cells[row][col];
       const marker = markerMap.get(pointKey(point));
-      svg.appendChild(pointCircle(point, stone, interactiveSet, marker, onPointActivate));
+      const isLastMove = !!stone && !!lastMove && lastMove.row === row && lastMove.col === col;
+      svg.appendChild(pointCircle(point, stone, interactiveSet, marker, isLastMove, onPointActivate));
       if (marker) svg.appendChild(markerShape(col, row, marker));
+      if (isLastMove) {
+        // Contrasts against the stone it sits on, so it reads at a glance on
+        // either colour. The point's own aria-label carries the same fact.
+        svg.appendChild(dot(col, row, 0.13, `go-board-last-move go-board-last-move-${stone}`));
+      }
       if (highlightSet.has(pointKey(point))) {
         // A highlighted stone gets a halo just outside it (an occupied point's
         // fill would otherwise paint straight over a same-sized ring); a
@@ -89,6 +101,7 @@ function pointCircle(
   stone: Board["cells"][number][number],
   interactiveSet: Set<string>,
   marker: PointMarker | undefined,
+  isLastMove: boolean,
   onPointActivate?: (point: Point) => void,
 ): SVGCircleElement {
   const circle = document.createElementNS(SVG_NS, "circle");
@@ -97,7 +110,7 @@ function pointCircle(
   circle.setAttribute("r", "0.42");
   circle.classList.add("go-board-point");
   if (stone) circle.classList.add(`go-board-point-${stone}`);
-  describePoint(circle, point, stone, marker);
+  describePoint(circle, point, stone, marker, isLastMove);
 
   const canActivate = interactiveSet.has(pointKey(point));
   if (canActivate && onPointActivate) {
@@ -127,13 +140,14 @@ function gridLine(x1: number, y1: number, x2: number, y2: number): SVGLineElemen
   return line;
 }
 
+/** `className` may name more than one class, space-separated. */
 function dot(x: number, y: number, radius: number, className: string): SVGCircleElement {
   const circle = document.createElementNS(SVG_NS, "circle");
   circle.setAttribute("cx", String(x));
   circle.setAttribute("cy", String(y));
   circle.setAttribute("r", String(radius));
   circle.setAttribute("aria-hidden", "true");
-  circle.classList.add(className);
+  circle.classList.add(...className.split(" "));
   return circle;
 }
 
@@ -201,8 +215,10 @@ function describePoint(
   { row, col }: Point,
   stone: Board["cells"][number][number],
   marker?: PointMarker,
+  isLastMove = false,
 ): void {
   const state = stone ? `${stone} stone` : "empty";
-  const suffix = marker ? ` — ${marker.label}` : "";
+  const notes = [marker?.label, isLastMove ? "last move" : null].filter(Boolean);
+  const suffix = notes.length > 0 ? ` — ${notes.join(", ")}` : "";
   point.setAttribute("aria-label", `Row ${row + 1}, column ${col + 1}: ${state}${suffix}`);
 }

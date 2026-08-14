@@ -129,6 +129,42 @@ describe("walking into settled territory", () => {
   });
 });
 
+describe("the last-move marker", () => {
+  function lastMoveAt(doc: Document): string | null {
+    const dot = doc.querySelector("circle.go-board-last-move");
+    return dot ? `${dot.getAttribute("cy")},${dot.getAttribute("cx")}` : null;
+  }
+
+  it("starts absent on the given position, then follows each move played", () => {
+    const { doc, window } = setUp();
+    expect(lastMoveAt(doc)).toBeNull();
+
+    click(doc, window, ...SEAL_POINT);
+    expect(lastMoveAt(doc)).toBe("0,4");
+
+    click(doc, window, ...REDUCE_POINT);
+    expect(lastMoveAt(doc)).toBe("3,5");
+  });
+
+  it("ignores moves the lesson turns down and moves the rules engine rejects", () => {
+    const { doc, window } = setUp();
+    click(doc, window, ...SEAL_POINT);
+
+    click(doc, window, ...IDLE_POINT);
+    expect(lastMoveAt(doc)).toBe("0,4");
+
+    click(doc, window, ...SUICIDE_POINT);
+    expect(lastMoveAt(doc)).toBe("0,4");
+  });
+
+  it("clears on reset", () => {
+    const { doc, window } = setUp();
+    click(doc, window, ...SEAL_POINT);
+    clickButton(doc, window, "lesson-reset");
+    expect(lastMoveAt(doc)).toBeNull();
+  });
+});
+
 describe("the three moves in sequence", () => {
   it("sealing the wall reports the territory it just created", () => {
     const { doc, window } = setUp();

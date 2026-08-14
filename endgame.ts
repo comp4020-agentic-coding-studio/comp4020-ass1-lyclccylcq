@@ -53,6 +53,7 @@ export function mount(elements: LessonElements): void {
   let board: Board = createEndgameBoard();
   let stage: Stage = "seal";
   let contested: Point[] = [...CONTESTED];
+  let lastMove: Point | null = null;
   let feedback = "";
 
   function answers(): Point[] {
@@ -89,6 +90,7 @@ export function mount(elements: LessonElements): void {
     renderGoBoard(boardEl, {
       board,
       interactive: interactivePoints(),
+      lastMove,
       onPointActivate: (point) => handleActivate(point),
     });
 
@@ -117,6 +119,7 @@ export function mount(elements: LessonElements): void {
     notifyMoveResult(result);
     if (!result.ok) return;
     board = result.board;
+    lastMove = point;
     contested = contested.filter((candidate) => !pointsEqual(candidate, point));
     const after = scoreBoard(board, KOMI);
 
@@ -157,6 +160,7 @@ export function mount(elements: LessonElements): void {
     board = createEndgameBoard();
     stage = "seal";
     contested = [...CONTESTED];
+    lastMove = null;
     feedback = "";
     render();
   });

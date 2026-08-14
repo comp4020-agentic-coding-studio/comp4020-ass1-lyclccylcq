@@ -13,6 +13,7 @@ const resetButton = document.querySelector<HTMLButtonElement>("#lesson-reset");
 
 let board: Board = placingStonesLesson.createInitialBoard();
 let toPlay: Stone = "black";
+let lastMove: Point | null = null;
 
 function opponent(stone: Stone): Stone {
   return stone === "black" ? "white" : "black";
@@ -37,6 +38,7 @@ function render(): void {
   renderGoBoard(boardEl, {
     board,
     interactive: emptyPoints(board),
+    lastMove,
     onPointActivate: handleActivate,
   });
 }
@@ -47,6 +49,7 @@ function handleActivate(point: Point): void {
   if (!result.ok) return;
 
   board = result.board;
+  lastMove = point;
   if (feedbackEl) {
     const played = toPlay;
     toPlay = opponent(toPlay);
@@ -60,6 +63,7 @@ function handleActivate(point: Point): void {
 resetButton?.addEventListener("click", () => {
   board = placingStonesLesson.createInitialBoard();
   toPlay = "black";
+  lastMove = null;
   if (feedbackEl) feedbackEl.textContent = "";
   render();
 });

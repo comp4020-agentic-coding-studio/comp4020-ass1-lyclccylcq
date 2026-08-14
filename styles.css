@@ -822,6 +822,23 @@ main.spread {
   pointer-events: none;
 }
 
+/* Last-move dot: the marker a player leaves on a physical board, small and
+   centred inside the stone rather than around it. Coloured against the stone
+   it sits on, and never large enough to compete with the stone itself. */
+.go-board-last-move {
+  pointer-events: none;
+}
+
+.go-board-last-move-black {
+  fill: var(--stone-white);
+  opacity: 0.85;
+}
+
+.go-board-last-move-white {
+  fill: var(--stone-black);
+  opacity: 0.7;
+}
+
 .go-board-point {
   fill: transparent;
 }
