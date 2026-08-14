@@ -1,4 +1,4 @@
-// Bootstraps Lesson 6: one already-finished 9x9 position, counted in six
+// Bootstraps Lesson 7: one already-finished 9x9 position, counted in six
 // stages. Every number shown comes straight out of scoreBoard() — nothing
 // here hard-codes a stone count, a territory count, or a winner, so the
 // demo text can never drift out of sync with the board it's describing.
@@ -45,7 +45,8 @@ function plural(count: number, noun: string): string {
 }
 
 function instructionFor(stage: Stage, result: ScoreResult): string {
-  if (stage === "position") return "The stones are finished. Now we count who controls more of the board.";
+  if (stage === "position")
+    return "Both players have passed, so this board is final. Now we count who controls more of it.";
   if (stage === "black") return "Every empty point that only Black's stones surround becomes Black's territory.";
   if (stage === "white") return "Everything that only White's stones surround becomes White's territory, the same way.";
   if (stage === "neutral") {
@@ -113,7 +114,7 @@ function buildMarkers(stageIndex: number, result: ScoreResult): PointMarker[] {
   return markers;
 }
 
-/** Wires up Lesson 6 against the given elements. Exported (rather than run
+/** Wires up Lesson 7 against the given elements. Exported (rather than run
  * only as a side effect of import) so it can be tested against a detached
  * document, without touching the real page's DOM. */
 export function mount(elements: LessonElements): void {

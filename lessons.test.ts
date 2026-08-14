@@ -28,6 +28,7 @@ import {
   illegalMovesLesson,
 } from "./lesson-illegal-moves";
 import { CAPTURE_POINT, KO_POINT, koLesson } from "./lesson-ko";
+import { SEAL_POINT, endgameLesson } from "./lesson-endgame";
 import { createScoringBoard, scoringLesson } from "./lesson-scoring";
 
 const lessons = [
@@ -36,6 +37,7 @@ const lessons = [
   connectedGroupsLesson,
   illegalMovesLesson,
   koLesson,
+  endgameLesson,
   scoringLesson,
 ];
 const examples = [
@@ -111,12 +113,25 @@ describe("lesson definitions", () => {
     expect(getStone(board, CAPTURE_POINT)).toBeNull();
   });
 
-  it("Lesson 6 (scoring) exists", () => {
+  it("Lesson 6 (endgame) exists", () => {
+    expect(endgameLesson.id).toBe("endgame");
+    expect(endgameLesson.title).toBeTruthy();
+  });
+
+  it("Lesson 6 loads its own initial state: a wall one stone short of the edge", () => {
+    const board = endgameLesson.createInitialBoard();
+    expect(board.size).toBe(9);
+    expect(getStone(board, SEAL_POINT)).toBeNull();
+    expect(getStone(board, { row: 1, col: 4 })).toBe("black");
+    expect(getStone(board, { row: 0, col: 5 })).toBe("white");
+  });
+
+  it("Lesson 7 (scoring) exists", () => {
     expect(scoringLesson.id).toBe("scoring");
     expect(scoringLesson.title).toBeTruthy();
   });
 
-  it("Lesson 6 loads its own initial state: a finished 9x9 position dividing the board in two", () => {
+  it("Lesson 7 loads its own initial state: a finished 9x9 position dividing the board in two", () => {
     const board = scoringLesson.createInitialBoard();
     expect(board.size).toBe(9);
     expect(getStone(board, { row: 0, col: 3 })).toBe("black");

@@ -1,13 +1,13 @@
 // Single source of truth for the book's page order: cover -> contents ->
-// contents-2 -> prologue -> the six chapters -> closing. book-nav.ts reads
-// this to find each page's neighbours; nothing else needs to know the
-// sequence.
+// contents-2 -> prologue -> the seven chapters -> free play -> closing.
+// book-nav.ts reads this to find each page's neighbours; nothing else needs to
+// know the sequence.
 
 export interface BookPage {
   id: string;
   /** Path relative to the site root, e.g. "lessons/placing-stones.html". */
   path: string;
-  /** Traditional chapter numeral + label; only the six chapters carry one. */
+  /** Traditional chapter numeral + label; only the seven chapters carry one. */
   chapterKicker?: string;
   title: string;
 }
@@ -48,11 +48,20 @@ export const BOOK_PAGES: BookPage[] = [
     title: "Ko",
   },
   {
+    id: "endgame",
+    path: "lessons/endgame.html",
+    chapterKicker: "第六章 · 收官",
+    title: "Endgame",
+  },
+  {
     id: "scoring",
     path: "lessons/scoring.html",
-    chapterKicker: "第六章 · 数子",
+    chapterKicker: "第七章 · 数子",
     title: "Winning the Game",
   },
+  // Free play is open practice rather than a numbered chapter, so it carries
+  // no kicker and no completion state.
+  { id: "free-play", path: "free-play.html", title: "Free Play" },
   { id: "closing", path: "closing.html", title: "Closing" },
 ];
 

@@ -60,11 +60,7 @@ function tagDirection(direction: "prev" | "next"): void {
   }
 }
 
-function createLink(current: BookPage, target: BookPage, direction: "prev" | "next"): HTMLAnchorElement {
-  const link = document.createElement("a");
-  link.className = `book-nav-link book-nav-${direction}`;
-  link.href = relativeHref(current.path, target.path);
-  link.textContent = direction === "prev" ? `‹ ${target.title}` : `${target.title} ›`;
+function attachTurnHandler(link: HTMLAnchorElement, direction: "prev" | "next"): void {
   link.addEventListener("click", (event) => {
     if (link.dataset.turning === "true") {
       event.preventDefault();
@@ -73,6 +69,14 @@ function createLink(current: BookPage, target: BookPage, direction: "prev" | "ne
     link.dataset.turning = "true";
     tagDirection(direction);
   });
+}
+
+function createLink(current: BookPage, target: BookPage, direction: "prev" | "next"): HTMLAnchorElement {
+  const link = document.createElement("a");
+  link.className = `book-nav-link book-nav-${direction}`;
+  link.href = relativeHref(current.path, target.path);
+  link.textContent = direction === "prev" ? `‹ ${target.title}` : `${target.title} ›`;
+  attachTurnHandler(link, direction);
   return link;
 }
 
@@ -90,4 +94,34 @@ export function mount(currentId: string, container: HTMLElement | null): void {
 
   container.appendChild(prev ? createLink(current, prev, "prev") : document.createElement("span"));
   container.appendChild(next ? createLink(current, next, "next") : document.createElement("span"));
+}
+
+/** Mounts a single, custom-labelled page-turn link into `container` — the
+ * paper-integrated corner controls used by the two Contents pages instead of
+ * the generic .book-nav footer (which derives its label from the target
+ * page's `title`, and both Contents pages share the title "Contents"). Reuses
+ * the same adjacency data, relative-href math, and sessionStorage-tagged
+ * transition as `mount`, just with a caller-supplied label and no
+ * span-for-missing-neighbour padding, since each corner is optional on its
+ * own. A no-op if the container, page, or that neighbour is missing. */
+export function mountPageTurn(
+  currentId: string,
+  container: HTMLElement | null,
+  direction: "prev" | "next",
+  label: string,
+): void {
+  if (!container) return;
+  const current = findPage(currentId);
+  if (!current) return;
+
+  const target = direction === "prev" ? getAdjacent(currentId).prev : getAdjacent(currentId).next;
+  container.textContent = "";
+  if (!target) return;
+
+  const link = document.createElement("a");
+  link.className = `page-turn page-turn-${direction}`;
+  link.href = relativeHref(current.path, target.path);
+  link.textContent = label;
+  attachTurnHandler(link, direction);
+  container.appendChild(link);
 }

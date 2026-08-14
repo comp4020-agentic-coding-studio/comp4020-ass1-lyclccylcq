@@ -1,4 +1,4 @@
-// The predefined position for Lesson 6: one complete, already-finished 9x9
+// The predefined position for Lesson 7: one complete, already-finished 9x9
 // game, not something the learner plays into. Black's wall steps one column
 // right every three rows, giving Black the larger upper-left area and White
 // the smaller lower-right one; every empty point on the board borders

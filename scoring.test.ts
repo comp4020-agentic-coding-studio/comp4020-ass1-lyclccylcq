@@ -1,4 +1,4 @@
-// Behaviour tests for Lesson 6's DOM wiring: mount() takes plain element
+// Behaviour tests for Lesson 7's DOM wiring: mount() takes plain element
 // references, so a detached jsdom document stands in for the real page.
 // These walk the six-stage counting sequence and assert on rendered text and
 // marker counts, never on a hard-coded number the lesson text would also
@@ -80,7 +80,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("Lesson 6 starts on the finished position, unrevealed", () => {
+describe("Lesson 7 starts on the finished position, unrevealed", () => {
   it("shows the board with no territory markers and nothing yet interactive", () => {
     const { doc } = setUp();
     expect(doc.querySelectorAll(".go-board-marker")).toHaveLength(0);
@@ -228,7 +228,7 @@ describe("resetting the walkthrough", () => {
   });
 });
 
-describe("Lesson 6 is registered separately from the other lessons", () => {
+describe("Lesson 7 is registered separately from the other lessons", () => {
   it("mounts its own board independent of any other lesson module", () => {
     const { doc } = setUp();
     expect(doc.querySelectorAll("circle.go-board-point-black")).toHaveLength(9);

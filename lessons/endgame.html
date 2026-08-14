@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ko and ko threats — Learn Go</title>
+    <title>Endgame — Learn Go</title>
     <link rel="stylesheet" href="../styles.css" />
     <script>
       (function () {
@@ -29,39 +29,36 @@
     </header>
     <main class="spread">
       <div class="spread-text">
-        <p class="chapter-kicker">第五章 · 劫</p>
-        <h1>5. Ko and ko threats</h1>
+        <p class="chapter-kicker">第六章 · 收官</p>
+        <h1>6. Endgame</h1>
         <p>
-          Legal moves can still create another problem: two players might
-          capture the same stone forever.
+          Games don't end suddenly. Long before the last stone, the big
+          fights are over and both players are settling boundaries: closing
+          their own gaps, and taking the points that still belong to nobody.
+          This is the endgame, 收官.
         </p>
         <p>
-          A player cannot immediately make a move that recreates the board
-          position from immediately before the opponent's last move. This is
-          called the ko rule.
+          The position below is one of those. Nothing is in danger and
+          nothing is in doubt &mdash; but three points are still worth
+          playing. Find them one at a time. A stone somewhere safe and
+          settled is legal and completely useless, so the board will tell you
+          when you've played one.
         </p>
         <p>
-          The rule doesn't say you have lost the ko &mdash; only that you must
-          wait one move. So you play somewhere else first: a
-          <em>ko threat</em> (劫材), a move urgent enough that your opponent
-          has to answer it. Their answer changes the board, and the ko point
-          is yours to take again.
-        </p>
-        <p>
-          Below, White's lone stone has just one liberty. Capture it with
-          Black, see what happens when you try to take it straight back, and
-          then play the whole cycle out from the other side.
+          When neither player can gain anything more, they stop. Saying so is
+          a move of its own: you <em>pass</em>. Two passes in a row, and the
+          game is over.
         </p>
         <p id="stage-instruction" class="lesson-instruction"></p>
         <p class="chapter-transition">
-          Eventually the threats run out and only small, quiet moves are
-          left. How does a game actually end?
+          The stones have stopped moving. Now: who actually won?
         </p>
       </div>
       <div class="spread-board">
         <div id="board"></div>
         <p id="lesson-feedback" class="lesson-feedback" aria-live="polite"></p>
         <div class="lesson-controls">
+          <button type="button" id="lesson-pass" class="go-board-reset" hidden>Pass</button>
           <button type="button" id="lesson-reset" class="go-board-reset">Reset this example</button>
         </div>
       </div>
@@ -69,11 +66,11 @@
     <footer>
       <nav id="book-nav" aria-label="Chapter navigation"></nav>
     </footer>
-    <script type="module" src="../ko.ts"></script>
+    <script type="module" src="../endgame.ts"></script>
     <script type="module">
       import { mountSoundToggle } from "../audio.ts";
       import { mount } from "../book-nav.ts";
-      mount("ko", document.querySelector("#book-nav"));
+      mount("endgame", document.querySelector("#book-nav"));
       mountSoundToggle(document.querySelector("#sound-toggle"));
     </script>
   </body>

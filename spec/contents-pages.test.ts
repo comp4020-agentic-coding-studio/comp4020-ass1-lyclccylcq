@@ -70,9 +70,15 @@ describe("Contents is split across exactly two pages", () => {
     ]);
   });
 
-  it("Contents page 2 links to chapters four through six, not the earlier ones", () => {
+  it("Contents page 2 links to chapters four through seven plus free play, not the earlier ones", () => {
     const links = hrefs(contents2!.doc, ".contents-list a");
-    expect(links).toEqual(["./lessons/illegal-moves.html", "./lessons/ko.html", "./lessons/scoring.html"]);
+    expect(links).toEqual([
+      "./lessons/illegal-moves.html",
+      "./lessons/ko.html",
+      "./lessons/endgame.html",
+      "./lessons/scoring.html",
+      "./free-play.html",
+    ]);
   });
 
   it("both pages share the same reusable page-material and sizing classes", () => {
@@ -82,13 +88,62 @@ describe("Contents is split across exactly two pages", () => {
     expect(box2).toBeTruthy();
   });
 
-  it("Contents page 1's book-nav footer turns forward to Contents page 2", () => {
-    // book-nav.ts mounts Prev/Next from BOOK_PAGES at runtime; statically we
-    // only assert the empty #book-nav placeholder exists for it to mount into
-    // (the adjacency itself is covered by book-nav.test.ts's getAdjacent
-    // suite, which is the authoritative source for page order).
-    expect(contents1!.doc.querySelector("#book-nav")).toBeTruthy();
-    expect(contents2!.doc.querySelector("#book-nav")).toBeTruthy();
+  it("the cover's open-book link goes straight to Contents page 1, never page 2", () => {
+    const index = pages.find(({ name }) => name === "index.html");
+    const link = [...index!.doc.querySelectorAll<HTMLAnchorElement>("a")].find(
+      (a) => a.getAttribute("href") === "./contents.html",
+    );
+    expect(link, "expected the cover to link straight to contents.html").toBeTruthy();
+    expect([...index!.doc.querySelectorAll("a")].some((a) => a.getAttribute("href") === "./contents-2.html")).toBe(
+      false,
+    );
+  });
+});
+
+// This exact bug — a real contents-2 that existed in code but was never
+// reachable in a way a reader would notice — has survived multiple
+// revisions, so it gets its own explicit regression coverage: a dedicated,
+// paper-integrated corner control (not the generic .book-nav footer, whose
+// label collapsed to a bare "Contents ›" because both pages share that
+// title) genuinely flips the active page to contents-2, and back.
+describe("Contents pages' bottom-corner page-turn controls", () => {
+  const contents1 = pages.find(({ name }) => name === "contents.html");
+  const contents2 = pages.find(({ name }) => name === "contents-2.html");
+
+  it("Contents page 1 has a bottom-right corner control and no left one", () => {
+    expect(contents1!.doc.querySelector(".book-open.leaf #page-turn-next")).toBeTruthy();
+    expect(contents1!.doc.querySelector("#page-turn-prev")).toBeNull();
+  });
+
+  it("Contents page 2 has both a bottom-left and a bottom-right corner control", () => {
+    expect(contents2!.doc.querySelector(".book-open.leaf #page-turn-prev")).toBeTruthy();
+    expect(contents2!.doc.querySelector(".book-open.leaf #page-turn-next")).toBeTruthy();
+  });
+
+  it("Contents page 1's corner control is wired to turn forward from contents to contents-2", () => {
+    // The bundler renames the imported function itself (e.g. mountPageTurn ->
+    // `e`), so match on the call's quoted arguments rather than its name:
+    // (id, querySelector(container), direction).
+    const bundle = mountedModuleSource(contents1!.doc, contents1!.path);
+    expect(bundle).toMatch(
+      /\(\s*["'`]contents["'`]\s*,\s*document\.querySelector\(\s*["'`]#page-turn-next["'`]\s*\)\s*,\s*["'`]next["'`]/,
+    );
+  });
+
+  it("Contents page 2's corner controls are wired to contents-2's own prev and next", () => {
+    const bundle = mountedModuleSource(contents2!.doc, contents2!.path);
+    expect(bundle).toMatch(
+      /\(\s*["'`]contents-2["'`]\s*,\s*document\.querySelector\(\s*["'`]#page-turn-prev["'`]\s*\)\s*,\s*["'`]prev["'`]/,
+    );
+    expect(bundle).toMatch(
+      /\(\s*["'`]contents-2["'`]\s*,\s*document\.querySelector\(\s*["'`]#page-turn-next["'`]\s*\)\s*,\s*["'`]next["'`]/,
+    );
+  });
+
+  it("both Contents pages keep the identical physical page material and box, corner controls included", () => {
+    const box1 = contents1!.doc.querySelector(".book-open.leaf");
+    const box2 = contents2!.doc.querySelector(".book-open.leaf");
+    expect(box1?.className).toBe(box2?.className);
   });
 });
 

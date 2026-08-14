@@ -208,17 +208,15 @@
             <span data-status-for="connected-groups"></span>
           </li>
         </ol>
+        <div class="page-turn-corner page-turn-corner-next" id="page-turn-next"></div>
       </div>
     </main>
-    <footer>
-      <nav id="book-nav" aria-label="Chapter navigation"></nav>
-    </footer>
     <script type="module">
       import { mountSoundToggle } from "./audio.ts";
-      import { mount } from "./book-nav.ts";
+      import { mountPageTurn } from "./book-nav.ts";
       import { isChapterComplete } from "./lesson-progress.ts";
 
-      mount("contents", document.querySelector("#book-nav"));
+      mountPageTurn("contents", document.querySelector("#page-turn-next"), "next", "续 ›");
       mountSoundToggle(document.querySelector("#sound-toggle"));
 
       for (const id of ["liberties-and-capture", "connected-groups"]) {

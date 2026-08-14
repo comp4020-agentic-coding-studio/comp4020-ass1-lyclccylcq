@@ -183,18 +183,17 @@ function markerShape(x: number, y: number, marker: PointMarker): SVGElement {
   return group;
 }
 
-function starPoints(size: number): Array<[number, number]> {
-  if (size !== 9) return [];
-  const edge = 2;
-  const center = 4;
-  const far = size - 1 - edge;
-  return [
-    [edge, edge],
-    [edge, far],
-    [far, edge],
-    [far, far],
-    [center, center],
-  ];
+// Star points are a convention, not a formula: a 9x9 board marks its four
+// 3-3 corners and the centre, while a 19x19 marks a full 3x3 grid on the
+// fourth lines. Written out per size for that reason — a shared expression
+// would only make two different traditions look like one.
+export function starPoints(size: number): Array<[number, number]> {
+  if (size === 9) return [[2, 2], [2, 6], [6, 2], [6, 6], [4, 4]];
+  if (size === 19) {
+    const lines = [3, 9, 15];
+    return lines.flatMap((x) => lines.map((y): [number, number] => [x, y]));
+  }
+  return [];
 }
 
 function describePoint(

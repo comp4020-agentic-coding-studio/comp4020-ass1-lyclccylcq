@@ -177,8 +177,8 @@
     <main class="book-open-shell">
       <div class="book-open leaf">
         <div class="book-open-heading">
-          <p class="chapter-kicker">目录 · 二</p>
-          <h1>Contents</h1>
+          <p class="chapter-kicker">目录 · 续</p>
+          <h1>Contents · Continued</h1>
         </div>
         <ol class="contents-list">
           <li>
@@ -191,36 +191,47 @@
           <li>
             <div class="contents-entry">
               <span class="chapter-kicker">第五章 · 劫</span>
-              <a href="./lessons/ko.html">5. Ko</a>
+              <a href="./lessons/ko.html">5. Ko and ko threats</a>
             </div>
             <span data-status-for="ko"></span>
           </li>
           <li>
             <div class="contents-entry">
-              <span class="chapter-kicker">第六章 · 数子</span>
-              <a href="./lessons/scoring.html">6. Winning the game</a>
+              <span class="chapter-kicker">第六章 · 收官</span>
+              <a href="./lessons/endgame.html">6. Endgame</a>
+            </div>
+            <span data-status-for="endgame"></span>
+          </li>
+          <li>
+            <div class="contents-entry">
+              <span class="chapter-kicker">第七章 · 数子</span>
+              <a href="./lessons/scoring.html">7. Winning the game</a>
             </div>
             <span data-status-for="scoring"></span>
           </li>
           <li>
-            <span>Free play</span>
-            <span class="lesson-status">Coming soon</span>
+            <div class="contents-entry">
+              <span class="chapter-kicker">自由对弈</span>
+              <a href="./free-play.html">Free play · 19×19</a>
+            </div>
           </li>
         </ol>
+        <div class="page-turn-corner page-turn-corner-prev" id="page-turn-prev"></div>
+        <div class="page-turn-corner page-turn-corner-next" id="page-turn-next"></div>
       </div>
     </main>
-    <footer>
-      <nav id="book-nav" aria-label="Chapter navigation"></nav>
-    </footer>
     <script type="module">
       import { mountSoundToggle } from "./audio.ts";
-      import { mount } from "./book-nav.ts";
+      import { mountPageTurn } from "./book-nav.ts";
       import { isChapterComplete } from "./lesson-progress.ts";
 
-      mount("contents-2", document.querySelector("#book-nav"));
+      mountPageTurn("contents-2", document.querySelector("#page-turn-prev"), "prev", "‹ 前页");
+      mountPageTurn("contents-2", document.querySelector("#page-turn-next"), "next", "序章 ›");
       mountSoundToggle(document.querySelector("#sound-toggle"));
 
-      for (const id of ["illegal-moves", "ko", "scoring"]) {
+      // Free play is open practice with no finish line, so it carries no
+      // completion mark.
+      for (const id of ["illegal-moves", "ko", "endgame", "scoring"]) {
         if (!isChapterComplete(id)) continue;
         const status = document.querySelector(`[data-status-for="${id}"]`);
         if (!status) continue;

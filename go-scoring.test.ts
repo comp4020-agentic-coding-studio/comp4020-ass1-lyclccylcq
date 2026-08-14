@@ -1,6 +1,6 @@
 // Unit tests for the area-scoring algorithm itself, on small hand-built
 // boards — separate from any lesson's presentation. The final test in this
-// file is the one guard that matters most: it pins every number the Lesson 6
+// file is the one guard that matters most: it pins every number the Lesson 7
 // demo text depends on, so the board and the copy can't silently drift apart.
 
 import { describe, expect, it } from "vitest";
@@ -135,7 +135,7 @@ describe("scoreBoard: counts and totals", () => {
   });
 });
 
-describe("Lesson 6's predefined board: exact scoring regression", () => {
+describe("Lesson 7's predefined board: exact scoring regression", () => {
   // This pins every figure the lesson's demo text depends on. If the board
   // fixture ever changes, this test's expectations must be re-derived by
   // hand and updated deliberately — that's the point.

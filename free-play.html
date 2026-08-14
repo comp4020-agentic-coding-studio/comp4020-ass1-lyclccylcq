@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Free play — Learn Go</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script>
+      (function () {
+        try {
+          var turn = sessionStorage.getItem("learn-go:page-turn");
+          if (turn) {
+            document.documentElement.setAttribute("data-turn", turn);
+            sessionStorage.removeItem("learn-go:page-turn");
+          }
+        } catch (error) {
+          // sessionStorage unavailable: falls back to the default transition.
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <header>
+      <nav aria-label="Primary">
+        <a href="./">Close the book</a>
+        <a href="./contents.html">Contents</a>
+        <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false">Sound: on</button>
+      </nav>
+    </header>
+    <main class="spread free-play">
+      <div class="spread-text">
+        <p class="chapter-kicker">自由对弈</p>
+        <h1>Free play</h1>
+        <p>
+          The chapters used a small 9&times;9 board because it fits on a
+          page. This is the real one: nineteen lines each way, 361
+          intersections, the board the game is actually played on.
+        </p>
+        <p>
+          Your opponent is a simple practice bot living in this page. It
+          knows the rules and it will take a stone it can take, rescue a
+          group it can rescue, and put yours in danger when it sees the
+          chance &mdash; but it is not strong, and it is not meant to be. It
+          is something to play against while the rules settle.
+        </p>
+        <p>
+          Pass when you have nothing worth playing. Two passes in a row end
+          the game, exactly as in chapter six.
+        </p>
+        <fieldset class="free-play-colours">
+          <legend>Play as</legend>
+          <label>
+            <input type="radio" name="free-play-colour" value="black" checked />
+            Black (first)
+          </label>
+          <label>
+            <input type="radio" name="free-play-colour" value="white" />
+            White (second)
+          </label>
+        </fieldset>
+      </div>
+      <div class="spread-board">
+        <div id="board"></div>
+        <p id="free-play-status" class="free-play-status" aria-live="polite"></p>
+        <div class="lesson-controls">
+          <button type="button" id="free-play-pass" class="go-board-reset">Pass</button>
+          <button type="button" id="free-play-undo" class="go-board-reset">Undo</button>
+          <button type="button" id="free-play-new" class="go-board-reset">New game</button>
+        </div>
+        <p id="free-play-result" class="free-play-result" aria-live="polite"></p>
+      </div>
+    </main>
+    <footer>
+      <nav id="book-nav" aria-label="Chapter navigation"></nav>
+    </footer>
+    <script type="module" src="./free-play.ts"></script>
+    <script type="module">
+      import { mountSoundToggle } from "./audio.ts";
+      import { mount } from "./book-nav.ts";
+      mount("free-play", document.querySelector("#book-nav"));
+      mountSoundToggle(document.querySelector("#sound-toggle"));
+    </script>
+  </body>
+</html>

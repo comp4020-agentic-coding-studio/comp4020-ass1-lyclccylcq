@@ -6,6 +6,7 @@
 import { JSDOM } from "jsdom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mount, type LessonElements } from "./ko";
+import { isChapterComplete } from "./lesson-progress";
 
 function setUp(): { doc: Document; window: JSDOM["window"] } {
   const dom = new JSDOM(
@@ -15,6 +16,9 @@ function setUp(): { doc: Document; window: JSDOM["window"] } {
       <p id="lesson-feedback"></p>
       <button id="lesson-reset"></button>
     </body>`,
+    // A real origin, so lesson-progress.ts's localStorage guard sees working
+    // storage instead of the SecurityError an opaque origin raises.
+    { url: "https://example.test/lessons/ko.html" },
   );
   const doc = dom.window.document;
   vi.stubGlobal("document", doc);
@@ -56,6 +60,9 @@ function stoneClass(doc: Document, row: number, col: number, colour: "black" | "
 const KO_POINT: [number, number] = [4, 4];
 const CAPTURE_POINT: [number, number] = [5, 4];
 const ELSEWHERE_POINT: [number, number] = [0, 8];
+const THREAT_POINT: [number, number] = [7, 1];
+const DEFENSE_POINT: [number, number] = [6, 0];
+const THREAT_DECOY: [number, number] = [0, 0];
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -166,10 +173,121 @@ describe("playing elsewhere lifts the ko restriction", () => {
   });
 });
 
+// The second half of the lesson: retaking the ko hands the same problem back
+// to Black, who now has to find a threat White must answer before returning
+// to it. The threat and the scripted answer live in this lesson, not in
+// go-rules.ts, which has no way to judge whether a move elsewhere was urgent.
+describe("the ko threat", () => {
+  function advanceToThreat(doc: Document, window: JSDOM["window"]): void {
+    click(doc, window, ...CAPTURE_POINT);
+    click(doc, window, ...KO_POINT);
+    click(doc, window, ...ELSEWHERE_POINT);
+    click(doc, window, ...KO_POINT);
+  }
+
+  it("asks for a threat once White has retaken, instead of ending the lesson there", () => {
+    const { doc, window } = setUp();
+    advanceToThreat(doc, window);
+
+    expect(instruction(doc)).toContain("劫材 · Ko threat");
+    expect(instruction(doc)).toContain("play an urgent");
+    expect(feedback(doc)).toContain("isn't recreating that old position anymore");
+  });
+
+  it("offers several legal threats and pre-selects none of them", () => {
+    const { doc, window } = setUp();
+    advanceToThreat(doc, window);
+
+    const active = [...doc.querySelectorAll("circle.go-board-point-active")];
+    expect(active.length).toBeGreaterThan(1);
+    expect(doc.querySelectorAll(".go-board-highlight")).toHaveLength(0);
+  });
+
+  it("a legal but idle move is answered with feedback and a retry, not with progress", () => {
+    const { doc, window } = setUp();
+    advanceToThreat(doc, window);
+
+    click(doc, window, ...THREAT_DECOY);
+
+    expect(stoneClass(doc, ...THREAT_DECOY, "black")).toBe(false);
+    expect(feedback(doc)).toContain("threatens nothing");
+    expect(instruction(doc)).toContain("劫材 · Ko threat");
+    // Still the learner's move: the real threat is right there to be found.
+    expect(
+      doc
+        .querySelector(`circle.go-board-point[cx="${THREAT_POINT[1]}"][cy="${THREAT_POINT[0]}"]`)
+        ?.classList.contains("go-board-point-active"),
+    ).toBe(true);
+  });
+
+  it("plays White's answer to the real threat in the same move, without a second click", () => {
+    const { doc, window } = setUp();
+    advanceToThreat(doc, window);
+
+    click(doc, window, ...THREAT_POINT);
+
+    expect(stoneClass(doc, ...THREAT_POINT, "black")).toBe(true);
+    expect(stoneClass(doc, ...DEFENSE_POINT, "white")).toBe(true);
+    expect(feedback(doc)).toContain("atari");
+    expect(instruction(doc)).toContain("Take the ko back");
+  });
+
+  it("lets Black retake the ko after the exchange, capturing White's stone back", () => {
+    const { doc, window } = setUp();
+    advanceToThreat(doc, window);
+    click(doc, window, ...THREAT_POINT);
+
+    click(doc, window, ...CAPTURE_POINT);
+
+    expect(stoneClass(doc, ...CAPTURE_POINT, "black")).toBe(true);
+    expect(stoneClass(doc, ...KO_POINT, "white")).toBe(false);
+    expect(feedback(doc)).toContain("no longer a repetition");
+  });
+
+  it("finishes the lesson only after the whole cycle, not at the first retake", () => {
+    const { doc, window } = setUp();
+    advanceToThreat(doc, window);
+    expect(isChapterComplete("ko")).toBe(false);
+
+    click(doc, window, ...THREAT_POINT);
+    click(doc, window, ...CAPTURE_POINT);
+
+    expect(isChapterComplete("ko")).toBe(true);
+    expect(doc.querySelectorAll("circle.go-board-point-active")).toHaveLength(0);
+  });
+
+  it("reset returns the whole lesson, threat shape included, to its opening position", () => {
+    const { doc, window } = setUp();
+    advanceToThreat(doc, window);
+    click(doc, window, ...THREAT_POINT);
+
+    doc.querySelector<HTMLButtonElement>("#lesson-reset")?.dispatchEvent(new window.Event("click", { bubbles: true }));
+
+    expect(stoneClass(doc, ...THREAT_POINT, "black")).toBe(false);
+    expect(stoneClass(doc, ...DEFENSE_POINT, "white")).toBe(false);
+    expect(stoneClass(doc, ...KO_POINT, "white")).toBe(true);
+    expect(feedback(doc)).toBe("");
+    expect(instruction(doc)).toContain("Play Black to capture it");
+  });
+});
+
 describe("Lesson 5 is registered separately from the other lessons", () => {
   it("mounts its own board independent of any other lesson module", () => {
     const { doc } = setUp();
-    expect(doc.querySelectorAll("circle.go-board-point-white")).toHaveLength(4);
-    expect(doc.querySelectorAll("circle.go-board-point-black")).toHaveLength(3);
+    // Four stones make the ko itself; two more in the corner are the group
+    // the ko threat later attacks, held down to two liberties by one Black
+    // stone.
+    expect(doc.querySelectorAll("circle.go-board-point-white")).toHaveLength(6);
+    expect(doc.querySelectorAll("circle.go-board-point-black")).toHaveLength(4);
+  });
+
+  it("leaves the threat shape alone while the ko itself is being played", () => {
+    const { doc, window } = setUp();
+    click(doc, window, ...CAPTURE_POINT);
+    click(doc, window, ...KO_POINT);
+    click(doc, window, ...ELSEWHERE_POINT);
+
+    expect(stoneClass(doc, ...THREAT_POINT, "black")).toBe(false);
+    expect(stoneClass(doc, ...DEFENSE_POINT, "white")).toBe(false);
   });
 });
