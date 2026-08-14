@@ -11,6 +11,11 @@
   --stone-black: #1c1c1c;
   --stone-white: #f5f5f0;
 
+  /* Lesson surface (main.spread): one step deeper than --paper, still a warm
+     rice-paper cream, never white — a printed insert on the page, not a UI
+     panel. */
+  --card-paper: #f0e6d2;
+
   /* Cover book (§ cover redesign): dyed cloth binding, not a UI-blue. */
   --cloth: #202a49;
   --cloth-dark: #141b31;
@@ -626,9 +631,19 @@ main {
 }
 
 /* Lesson spread: a two-page book layout on wide screens, a single readable
-   column on narrow ones rather than a shrunken spread. */
+   column on narrow ones rather than a shrunken spread. One unified surface —
+   title, instructions, board and feedback together — set apart from the
+   aged-paper page behind it, like a printed insert mounted into an old Go
+   manual rather than a stack of separate UI cards. */
 main.spread {
   max-width: 60rem;
+  margin-top: 1.75rem;
+  margin-bottom: 2.5rem;
+  padding: 2rem;
+  background-color: var(--card-paper);
+  border: 1px solid var(--rule);
+  border-radius: 0.4rem;
+  box-shadow: 0 0.15rem 0.5rem rgb(42 33 15 / 12%);
 }
 
 .spread {
@@ -639,6 +654,12 @@ main.spread {
 }
 
 @media (width <= 47.99rem) {
+  main.spread {
+    margin-left: 0.85rem;
+    margin-right: 0.85rem;
+    padding: 1.25rem;
+  }
+
   .spread {
     grid-template-columns: 1fr;
   }
