@@ -8,10 +8,11 @@ import { placingStonesLesson } from "./lesson-placing-stones";
 import { scoringLesson } from "./lesson-scoring";
 
 describe("book manifest", () => {
-  it("orders the book cover -> contents -> prologue -> six chapters -> closing", () => {
+  it("orders the book cover -> contents -> contents-2 -> prologue -> six chapters -> closing", () => {
     expect(BOOK_PAGES.map((page) => page.id)).toEqual([
       "cover",
       "contents",
+      "contents-2",
       "prologue",
       "placing-stones",
       "liberties-and-capture",

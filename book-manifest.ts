@@ -1,6 +1,7 @@
 // Single source of truth for the book's page order: cover -> contents ->
-// prologue -> the six chapters -> closing. book-nav.ts reads this to find
-// each page's neighbours; nothing else needs to know the sequence.
+// contents-2 -> prologue -> the six chapters -> closing. book-nav.ts reads
+// this to find each page's neighbours; nothing else needs to know the
+// sequence.
 
 export interface BookPage {
   id: string;
@@ -14,6 +15,7 @@ export interface BookPage {
 export const BOOK_PAGES: BookPage[] = [
   { id: "cover", path: "index.html", title: "Learn Go" },
   { id: "contents", path: "contents.html", title: "Contents" },
+  { id: "contents-2", path: "contents-2.html", title: "Contents" },
   { id: "prologue", path: "prologue.html", title: "Prologue" },
   {
     id: "placing-stones",

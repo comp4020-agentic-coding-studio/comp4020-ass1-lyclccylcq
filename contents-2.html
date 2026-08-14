@@ -177,35 +177,34 @@
     <main class="book-open-shell">
       <div class="book-open leaf">
         <div class="book-open-heading">
-          <p class="chapter-kicker">目录 · 一</p>
+          <p class="chapter-kicker">目录 · 二</p>
           <h1>Contents</h1>
         </div>
         <ol class="contents-list">
-          <li class="contents-prologue">
+          <li>
             <div class="contents-entry">
-              <span class="chapter-kicker">序章</span>
-              <a href="./prologue.html">About this book</a>
+              <span class="chapter-kicker">第四章 · 禁着</span>
+              <a href="./lessons/illegal-moves.html">4. Illegal moves: suicide</a>
             </div>
+            <span data-status-for="illegal-moves"></span>
           </li>
           <li>
             <div class="contents-entry">
-              <span class="chapter-kicker">第一章 · 着子</span>
-              <a href="./lessons/placing-stones.html">1. Placing a stone</a>
+              <span class="chapter-kicker">第五章 · 劫</span>
+              <a href="./lessons/ko.html">5. Ko</a>
             </div>
+            <span data-status-for="ko"></span>
           </li>
           <li>
             <div class="contents-entry">
-              <span class="chapter-kicker">第二章 · 气</span>
-              <a href="./lessons/liberties-and-capture.html">2. Liberties and capture</a>
+              <span class="chapter-kicker">第六章 · 数子</span>
+              <a href="./lessons/scoring.html">6. Winning the game</a>
             </div>
-            <span data-status-for="liberties-and-capture"></span>
+            <span data-status-for="scoring"></span>
           </li>
           <li>
-            <div class="contents-entry">
-              <span class="chapter-kicker">第三章 · 棋块</span>
-              <a href="./lessons/connected-groups.html">3. Connected groups</a>
-            </div>
-            <span data-status-for="connected-groups"></span>
+            <span>Free play</span>
+            <span class="lesson-status">Coming soon</span>
           </li>
         </ol>
       </div>
@@ -218,10 +217,10 @@
       import { mount } from "./book-nav.ts";
       import { isChapterComplete } from "./lesson-progress.ts";
 
-      mount("contents", document.querySelector("#book-nav"));
+      mount("contents-2", document.querySelector("#book-nav"));
       mountSoundToggle(document.querySelector("#sound-toggle"));
 
-      for (const id of ["liberties-and-capture", "connected-groups"]) {
+      for (const id of ["illegal-moves", "ko", "scoring"]) {
         if (!isChapterComplete(id)) continue;
         const status = document.querySelector(`[data-status-for="${id}"]`);
         if (!status) continue;

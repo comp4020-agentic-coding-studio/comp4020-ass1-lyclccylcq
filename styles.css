@@ -130,41 +130,6 @@ main {
   z-index: 1;
 }
 
-/* Page-turn decorative layers (§6, §8, §14): two extra named elements living
-   inside main, always fully rendered (so their view-transition snapshot has
-   real content to animate) but pinned behind main's real content at rest via
-   a negative z-index — the browser captures each named element as its own
-   independent snapshot regardless of what's drawn over it in the live page,
-   so this "hidden behind" trick has zero effect on the transition itself,
-   only on ordinary, non-transitioning browsing. Sized to main's own box
-   (not the viewport) so they can never peek out past main's own footprint,
-   the same way the existing book-page name already lives on main itself. */
-.page-back,
-.page-fold-shadow {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  backface-visibility: hidden;
-}
-
-.page-back {
-  view-transition-name: page-back;
-  padding: 0;
-}
-
-.page-fold-shadow {
-  view-transition-name: page-fold-shadow;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgb(20 12 4 / 35%) 46%,
-    rgb(20 12 4 / 35%) 54%,
-    transparent 100%
-  );
-  mix-blend-mode: multiply;
-}
-
 /* Tabletop backdrop (§5–§9): a fixed, viewport-anchored wood Go board and
    bowls behind the book. It carries no view-transition-name of its own —
    since it renders identically on the cover and on Contents, it's simply
@@ -502,19 +467,45 @@ main {
   filter: url("#ink-brush");
 }
 
-/* Shared interior page material (§11/§13): aged, faintly fibrous paper for
-   any open-book page. Kept independent of .book-open's sizing so a future
-   Prologue/lesson page can adopt just the material. */
+/* Shared interior page material (§11/§13, strengthened for the traditional
+   Chinese antique-book refinement): aged, faintly fibrous paper for any
+   open-book page. Two hairline directions (not one) avoid a single visible
+   grain axis; two off-centre blotches replace one dead-centre vignette for
+   uneven tone; a fine speckle layer and a tinted inset edge-shadow read as
+   gentle foxing without going anywhere near parchment/burnt-paper territory.
+   Kept independent of .book-open's sizing so a future Prologue/lesson page
+   can adopt just the material. */
 .leaf {
   background-color: var(--leaf);
   background-image:
     repeating-linear-gradient(90deg, rgb(0 0 0 / 2%) 0 1px, transparent 1px 6px),
-    radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(122 95 53 / 12%) 100%);
+    repeating-linear-gradient(3deg, rgb(0 0 0 / 1.5%) 0 1px, transparent 1px 9px),
+    repeating-radial-gradient(circle at 20% 30%, rgb(90 65 30 / 4%) 0 0.5px, transparent 0.5px 3px),
+    radial-gradient(ellipse 55% 45% at 28% 22%, rgb(122 95 53 / 8%), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 74% 72%, rgb(122 95 53 / 7%), transparent 70%),
+    radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(122 95 53 / 10%) 100%);
   border-radius: 0.15rem;
   box-shadow:
+    inset 0 0 0 1px rgb(122 95 53 / 10%),
+    inset 0 0 1.2rem rgb(122 95 53 / 10%),
     0 0.35rem 1rem rgb(60 40 15 / 20%),
     0 0.05rem 0.15rem rgb(60 40 15 / 15%);
   padding: 2.5rem 3rem 3rem;
+}
+
+/* .cover centres its book vertically in a header-free 100vh via flex; the
+   Contents shell sits under a real header instead, so plain document flow
+   left it hugging the top of the remaining space rather than centred the
+   way the closed cover was. Scoped to this one class (not global body/main)
+   so no other page's layout changes. ~3.2rem approximates the header's own
+   box (padding + line-height, stable at both required viewports since it
+   isn't driven by viewport size) — a small offset from the true value is
+   expected and acceptable, matching the cover's own page-thickness offset. */
+.book-open-shell {
+  min-height: calc(100vh - 3.2rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Contents is one interior page, not an open two-page spread (§Change 2): it
@@ -522,7 +513,10 @@ main {
    Contents never widens or re-centres the book — only the page content
    changes underneath the (unmoved) cover-sized silhouette. Reusing
    .cover-book's own width/aspect-ratio formula verbatim, rather than merely
-   approximating it, guarantees they match at every viewport by construction. */
+   approximating it, guarantees they match at every viewport by construction.
+   No height ceiling here: keeping content to ~4 rows per Contents page (two
+   pages total, see contents.html/contents-2.html) is what keeps the box near
+   5:7 without ever needing to shrink type to force a fit. */
 .book-open {
   width: clamp(16rem, 48vw, 30rem);
   aspect-ratio: 5 / 7;
@@ -554,11 +548,11 @@ main {
   }
 }
 
-/* Contents: a printed table of contents on a single page — rows separated by
-   a rule, not cards or columns. Tight vertical rhythm keeps all 8 rows on one
-   page at the cover's narrow width; aspect-ratio's height:auto still lets the
-   page grow taller (never clip) if a narrow phone needs more room than 5:7
-   allows. */
+/* Contents: a printed table of contents, split across two pages (contents.html,
+   contents-2.html) so each page's ~4 rows sit close to the cover's 5:7
+   footprint without shrinking type — rows separated by a rule, not cards or
+   columns. aspect-ratio's height:auto still lets a page grow taller (never
+   clip) if a narrow phone needs more room than 5:7 allows. */
 .contents-list {
   list-style: none;
   padding: 0;
@@ -824,339 +818,98 @@ main.spread {
   animation: none;
 }
 
-/* Layered page curl (§1–§21): three independently named snapshots choreographed
-   together — book-page (front content), page-back (aged blank reverse face),
-   page-fold-shadow (a travelling shadow at the fold) — replace the old single
-   rigid rotateY plane. Cross-name stacking is fixed here and shared by both
-   directions, since which side (old/new) does the animating is what flips
-   between next/prev, not which name sits on top of which. */
-::view-transition-group(book-page) {
-  z-index: 3;
-}
-
-::view-transition-group(page-back) {
-  z-index: 2;
-}
-
-::view-transition-group(page-fold-shadow) {
-  z-index: 1;
-}
-
-::view-transition-old(book-page),
-::view-transition-new(book-page),
-::view-transition-old(page-back),
-::view-transition-new(page-back) {
-  backface-visibility: hidden;
-}
-
-/* A direct jump (contents list, header nav) never tags a direction: book-page
-   keeps its short default crossfade, and the two curl-only layers stay fully
-   suppressed since there is no fold to draw for a plain cut. */
+/* Page-turn transition (§simplification): book-page (== main) is the only
+   layer that turns now — no back sheet, no fold shadow, no segments. A
+   direct jump (contents list, header nav) never tags a direction, so it
+   keeps a short default crossfade instead of the slide below. */
 html:not([data-turn])::view-transition-old(book-page),
 html:not([data-turn])::view-transition-new(book-page) {
   animation-duration: 120ms;
 }
 
-html:not([data-turn])::view-transition-old(page-back),
-html:not([data-turn])::view-transition-new(page-back),
-html:not([data-turn])::view-transition-old(page-fold-shadow),
-html:not([data-turn])::view-transition-new(page-fold-shadow) {
-  animation: none;
-  opacity: 0;
-}
-
-/* The cover has no curl layers of its own, so suppress Contents' "new" side
-   of each to prevent any stray flash while the cover swings away — §12's
-   cover keeps its own separate, untouched keyframes below. */
-html[data-turn="open"]::view-transition-old(page-back),
-html[data-turn="open"]::view-transition-new(page-back),
-html[data-turn="open"]::view-transition-old(page-fold-shadow),
-html[data-turn="open"]::view-transition-new(page-fold-shadow) {
-  animation: none;
-  opacity: 0;
-}
-
-html[data-turn="next"]::view-transition-old(book-page),
-html[data-turn="next"]::view-transition-new(book-page),
-html[data-turn="next"]::view-transition-old(page-back),
-html[data-turn="next"]::view-transition-new(page-back),
-html[data-turn="open"]::view-transition-old(book-page),
-html[data-turn="open"]::view-transition-new(book-page) {
-  transform-origin: left center;
-}
-
-html[data-turn="prev"]::view-transition-old(book-page),
-html[data-turn="prev"]::view-transition-new(book-page),
-html[data-turn="prev"]::view-transition-old(page-back),
-html[data-turn="prev"]::view-transition-new(page-back) {
-  transform-origin: right center;
-}
-
-/* Cover opening (§20): a heavier board, not a paper leaf, so book-page swings
-   as a single rigid plane here rather than joining the layered curl — no
-   back face or fold shadow to reveal, which is exactly why both are
-   suppressed above for this direction. */
+/* Cover opening: a heavier board, not a paper leaf, so book-page swings as a
+   single rigid plane on its own hinge here, untouched by the simplification. */
 html[data-turn="open"]::view-transition-old(book-page) {
+  transform-origin: left center;
   animation: book-cover-open-out 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
 }
 
 html[data-turn="open"]::view-transition-new(book-page) {
+  transform-origin: left center;
   animation: book-cover-open-in 650ms cubic-bezier(0.3, 0, 0.15, 1) both;
 }
 
-/* Next (§4–§9): the destination is already the visible "new" book-page —
-   static from frame 0, z-index below everything else, nothing fades or pops
-   in underneath it. Everything that moves is the outgoing "old" side: the
-   front face rotates off the spine while its visible width narrows from the
-   free (right) edge inward (clip-path, not just rotation, so the edge really
-   travels rather than the whole rectangle just tilting); the back face stays
-   hidden past its own 90° until right around when the front face passes its
-   own 90°, so one takes over from the other with no dead gap; the fold
-   shadow travels with that same boundary and fades in and out across bands
-   roughly matching §8's 0/20–40/40–65/65–90/100 progression. */
-html[data-turn="next"]::view-transition-new(book-page) {
-  animation: none;
-  opacity: 1;
-  z-index: 0;
-}
-
+/* Next: the current page eases a short distance left while fading out; the
+   destination page starts a short distance to the right, fully transparent,
+   and eases into its resting position while fading in. Restrained horizontal
+   movement standing in for a page turn, not a literal paper simulation. */
 html[data-turn="next"]::view-transition-old(book-page) {
-  z-index: 3;
-  animation: page-curl-content-next 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: page-slide-out-next 380ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-html[data-turn="next"]::view-transition-old(page-back) {
-  animation: page-curl-back-next 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+html[data-turn="next"]::view-transition-new(book-page) {
+  animation: page-slide-in-next 380ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-html[data-turn="next"]::view-transition-old(page-fold-shadow) {
-  animation: page-curl-shadow-next 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-
-html[data-turn="next"]::view-transition-new(page-back),
-html[data-turn="next"]::view-transition-new(page-fold-shadow) {
-  animation: none;
-  opacity: 0;
-}
-
-/* Prev (§11): a genuine mirror, not the next keyframes played in reverse —
-   the hinge moves to the right edge, the free edge now travels left → right,
-   and it's the incoming "new" side that does the turning while the outgoing
-   "old" side is the static destination already sitting there. */
+/* Previous: a genuine mirror of Next — the current page eases right while
+   fading out, the destination page enters from the left. */
 html[data-turn="prev"]::view-transition-old(book-page) {
-  animation: none;
-  opacity: 1;
-  z-index: 0;
+  animation: page-slide-out-prev 380ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 html[data-turn="prev"]::view-transition-new(book-page) {
-  z-index: 3;
-  animation: page-curl-content-prev 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: page-slide-in-prev 380ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-html[data-turn="prev"]::view-transition-new(page-back) {
-  animation: page-curl-back-prev 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-
-html[data-turn="prev"]::view-transition-new(page-fold-shadow) {
-  animation: page-curl-shadow-prev 620ms cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-
-html[data-turn="prev"]::view-transition-old(page-back),
-html[data-turn="prev"]::view-transition-old(page-fold-shadow) {
-  animation: none;
-  opacity: 0;
-}
-
-@keyframes page-curl-content-next {
+@keyframes page-slide-out-next {
   0% {
-    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scaleX(1);
-    clip-path: inset(0 0% 0 0);
-  }
-
-  18% {
-    animation-timing-function: cubic-bezier(0.3, 0, 0.4, 1);
-    transform: perspective(1600px) rotateY(-24deg) skewY(-1deg) scaleX(0.99);
-    clip-path: inset(0 5% 0 0);
-  }
-
-  45% {
-    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
-    transform: perspective(1600px) rotateY(-74deg) skewY(-2.5deg) scaleX(0.94);
-    clip-path: inset(0 36% 0 0);
-  }
-
-  68% {
-    transform: perspective(1600px) rotateY(-98deg) skewY(-1deg) scaleX(0.92);
-    clip-path: inset(0 58% 0 0);
-  }
-
-  88% {
-    animation-timing-function: ease-out;
-    transform: perspective(1600px) rotateY(-140deg) skewY(0deg) scaleX(0.9);
-    clip-path: inset(0 82% 0 0);
+    transform: translateX(0);
+    opacity: 1;
+    filter: drop-shadow(0 0 0 transparent);
   }
 
   100% {
-    transform: perspective(1600px) rotateY(-172deg) skewY(0deg) scaleX(0.9);
-    clip-path: inset(0 100% 0 0);
-  }
-}
-
-@keyframes page-curl-back-next {
-  0% {
-    transform: perspective(1600px) rotateY(102deg) scaleX(0.9);
-    clip-path: inset(0 0 0 100%);
-  }
-
-  18% {
-    transform: perspective(1600px) rotateY(96deg) scaleX(0.9);
-    clip-path: inset(0 0 0 95%);
-  }
-
-  45% {
-    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
-    transform: perspective(1600px) rotateY(70deg) scaleX(0.93);
-    clip-path: inset(0 0 0 64%);
-  }
-
-  68% {
-    transform: perspective(1600px) rotateY(30deg) scaleX(0.95);
-    clip-path: inset(0 0 0 42%);
-  }
-
-  88% {
-    animation-timing-function: ease-out;
-    transform: perspective(1600px) rotateY(-8deg) scaleX(0.97);
-    clip-path: inset(0 0 0 18%);
-  }
-
-  100% {
-    transform: perspective(1600px) rotateY(-24deg) scaleX(0.98);
-    clip-path: inset(0 0 0 0%);
-  }
-}
-
-@keyframes page-curl-shadow-next {
-  0% {
+    transform: translateX(-8%);
     opacity: 0;
-    transform: translateX(38%);
-  }
-
-  30% {
-    opacity: 0.5;
-    transform: translateX(14%);
-  }
-
-  52% {
-    opacity: 0.85;
-    transform: translateX(-6%);
-  }
-
-  78% {
-    opacity: 0.3;
-    transform: translateX(-32%);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(-55%);
+    filter: drop-shadow(-0.35rem 0 0.6rem rgb(20 12 4 / 12%));
   }
 }
 
-@keyframes page-curl-content-prev {
+@keyframes page-slide-in-next {
   0% {
-    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scaleX(1);
-    clip-path: inset(0 0 0 0%);
-  }
-
-  18% {
-    animation-timing-function: cubic-bezier(0.3, 0, 0.4, 1);
-    transform: perspective(1600px) rotateY(24deg) skewY(1deg) scaleX(0.99);
-    clip-path: inset(0 0 0 5%);
-  }
-
-  45% {
-    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
-    transform: perspective(1600px) rotateY(74deg) skewY(2.5deg) scaleX(0.94);
-    clip-path: inset(0 0 0 36%);
-  }
-
-  68% {
-    transform: perspective(1600px) rotateY(98deg) skewY(1deg) scaleX(0.92);
-    clip-path: inset(0 0 0 58%);
-  }
-
-  88% {
-    animation-timing-function: ease-out;
-    transform: perspective(1600px) rotateY(140deg) skewY(0deg) scaleX(0.9);
-    clip-path: inset(0 0 0 82%);
+    transform: translateX(8%);
+    opacity: 0;
   }
 
   100% {
-    transform: perspective(1600px) rotateY(172deg) skewY(0deg) scaleX(0.9);
-    clip-path: inset(0 0 0 100%);
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
-@keyframes page-curl-back-prev {
+@keyframes page-slide-out-prev {
   0% {
-    transform: perspective(1600px) rotateY(-102deg) scaleX(0.9);
-    clip-path: inset(0 100% 0 0);
-  }
-
-  18% {
-    transform: perspective(1600px) rotateY(-96deg) scaleX(0.9);
-    clip-path: inset(0 95% 0 0);
-  }
-
-  45% {
-    animation-timing-function: cubic-bezier(0.5, 0, 0.35, 1);
-    transform: perspective(1600px) rotateY(-70deg) scaleX(0.93);
-    clip-path: inset(0 64% 0 0);
-  }
-
-  68% {
-    transform: perspective(1600px) rotateY(-30deg) scaleX(0.95);
-    clip-path: inset(0 42% 0 0);
-  }
-
-  88% {
-    animation-timing-function: ease-out;
-    transform: perspective(1600px) rotateY(8deg) scaleX(0.97);
-    clip-path: inset(0 18% 0 0);
+    transform: translateX(0);
+    opacity: 1;
+    filter: drop-shadow(0 0 0 transparent);
   }
 
   100% {
-    transform: perspective(1600px) rotateY(24deg) scaleX(0.98);
-    clip-path: inset(0 0% 0 0);
+    transform: translateX(8%);
+    opacity: 0;
+    filter: drop-shadow(0.35rem 0 0.6rem rgb(20 12 4 / 12%));
   }
 }
 
-@keyframes page-curl-shadow-prev {
+@keyframes page-slide-in-prev {
   0% {
+    transform: translateX(-8%);
     opacity: 0;
-    transform: translateX(-38%);
-  }
-
-  30% {
-    opacity: 0.5;
-    transform: translateX(-14%);
-  }
-
-  52% {
-    opacity: 0.85;
-    transform: translateX(6%);
-  }
-
-  78% {
-    opacity: 0.3;
-    transform: translateX(32%);
   }
 
   100% {
-    opacity: 0;
-    transform: translateX(55%);
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 

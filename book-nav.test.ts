@@ -23,10 +23,21 @@ describe("getAdjacent", () => {
     expect(adjacent.next?.id).toBe("illegal-moves");
   });
 
-  it("the prologue sits between contents and the first chapter", () => {
+  it("the prologue sits between contents-2 and the first chapter", () => {
     const adjacent = getAdjacent("prologue");
-    expect(adjacent.prev?.id).toBe("contents");
+    expect(adjacent.prev?.id).toBe("contents-2");
     expect(adjacent.next?.id).toBe("placing-stones");
+  });
+
+  it("contents' next page is contents-2, never skipped", () => {
+    const adjacent = getAdjacent("contents");
+    expect(adjacent.next?.id).toBe("contents-2");
+  });
+
+  it("contents-2 sits between contents and the prologue", () => {
+    const adjacent = getAdjacent("contents-2");
+    expect(adjacent.prev?.id).toBe("contents");
+    expect(adjacent.next?.id).toBe("prologue");
   });
 
   it("the first chapter's previous page is the prologue, not contents", () => {
@@ -85,8 +96,28 @@ describe("mount", () => {
 
     const prev = dom.window.document.querySelector<HTMLAnchorElement>(".book-nav-prev");
     const next = dom.window.document.querySelector<HTMLAnchorElement>(".book-nav-next");
-    expect(prev?.getAttribute("href")).toBe("./contents.html");
+    expect(prev?.getAttribute("href")).toBe("./contents-2.html");
     expect(next?.getAttribute("href")).toBe("./lessons/placing-stones.html");
+  });
+
+  it("renders the working footer between the two Contents pages, in order", () => {
+    const { doc } = setUpBookNav();
+
+    mount("contents", doc.querySelector("#book-nav"));
+    expect(doc.querySelector<HTMLAnchorElement>(".book-nav-prev")?.getAttribute("href")).toBe(
+      "./index.html",
+    );
+    expect(doc.querySelector<HTMLAnchorElement>(".book-nav-next")?.getAttribute("href")).toBe(
+      "./contents-2.html",
+    );
+
+    mount("contents-2", doc.querySelector("#book-nav"));
+    expect(doc.querySelector<HTMLAnchorElement>(".book-nav-prev")?.getAttribute("href")).toBe(
+      "./contents.html",
+    );
+    expect(doc.querySelector<HTMLAnchorElement>(".book-nav-next")?.getAttribute("href")).toBe(
+      "./prologue.html",
+    );
   });
 
   it("omits the next link on the last page, and the prev link on the first", () => {
