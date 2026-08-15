@@ -186,28 +186,24 @@
               <span class="chapter-kicker">第四章 · 禁着</span>
               <a href="./lessons/illegal-moves.html">4. Illegal moves: suicide</a>
             </div>
-            <span data-status-for="illegal-moves"></span>
           </li>
           <li>
             <div class="contents-entry">
               <span class="chapter-kicker">第五章 · 劫</span>
               <a href="./lessons/ko.html">5. Ko and ko threats</a>
             </div>
-            <span data-status-for="ko"></span>
           </li>
           <li>
             <div class="contents-entry">
               <span class="chapter-kicker">第六章 · 收官</span>
               <a href="./lessons/endgame.html">6. Endgame</a>
             </div>
-            <span data-status-for="endgame"></span>
           </li>
           <li>
             <div class="contents-entry">
               <span class="chapter-kicker">第七章 · 数子</span>
               <a href="./lessons/scoring.html">7. Winning the game</a>
             </div>
-            <span data-status-for="scoring"></span>
           </li>
           <li>
             <div class="contents-entry">
@@ -223,22 +219,10 @@
     <script type="module">
       import { mountSoundToggle } from "./audio.ts";
       import { mountPageTurn } from "./book-nav.ts";
-      import { isChapterComplete } from "./lesson-progress.ts";
 
       mountPageTurn("contents-2", document.querySelector("#page-turn-prev"), "prev", "‹ 前页");
       mountPageTurn("contents-2", document.querySelector("#page-turn-next"), "next", "序章 ›");
       mountSoundToggle(document.querySelector("#sound-toggle"));
-
-      // Free play is open practice with no finish line, so it carries no
-      // completion mark.
-      for (const id of ["illegal-moves", "ko", "endgame", "scoring"]) {
-        if (!isChapterComplete(id)) continue;
-        const status = document.querySelector(`[data-status-for="${id}"]`);
-        if (!status) continue;
-        status.textContent = "✓";
-        status.classList.add("chapter-done");
-        status.setAttribute("aria-label", "Completed");
-      }
     </script>
   </body>
 </html>

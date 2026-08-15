@@ -198,14 +198,12 @@
               <span class="chapter-kicker">第二章 · 气</span>
               <a href="./lessons/liberties-and-capture.html">2. Liberties and capture</a>
             </div>
-            <span data-status-for="liberties-and-capture"></span>
           </li>
           <li>
             <div class="contents-entry">
               <span class="chapter-kicker">第三章 · 棋块</span>
               <a href="./lessons/connected-groups.html">3. Connected groups</a>
             </div>
-            <span data-status-for="connected-groups"></span>
           </li>
         </ol>
         <div class="page-turn-corner page-turn-corner-next" id="page-turn-next"></div>
@@ -214,19 +212,9 @@
     <script type="module">
       import { mountSoundToggle } from "./audio.ts";
       import { mountPageTurn } from "./book-nav.ts";
-      import { isChapterComplete } from "./lesson-progress.ts";
 
       mountPageTurn("contents", document.querySelector("#page-turn-next"), "next", "续 ›");
       mountSoundToggle(document.querySelector("#sound-toggle"));
-
-      for (const id of ["liberties-and-capture", "connected-groups"]) {
-        if (!isChapterComplete(id)) continue;
-        const status = document.querySelector(`[data-status-for="${id}"]`);
-        if (!status) continue;
-        status.textContent = "✓";
-        status.classList.add("chapter-done");
-        status.setAttribute("aria-label", "Completed");
-      }
     </script>
   </body>
 </html>

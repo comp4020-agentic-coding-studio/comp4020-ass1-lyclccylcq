@@ -169,6 +169,14 @@
     </div>
     <main class="cover">
       <h1 class="visually-hidden">Learn Go</h1>
+      <!-- The project's English identity, set in the room rather than on the
+           book: the book keeps its own Chinese title. Decorative here because
+           the h1 above already gives the page its accessible name — repeating
+           it would just announce "Learn Go" twice. -->
+      <p class="cover-wordmark" aria-hidden="true">
+        <span class="cover-wordmark-line">Learn</span>
+        <span class="cover-wordmark-line">Go</span>
+      </p>
       <nav aria-label="Primary">
         <a class="cover-enter" href="./contents.html">
           <span class="cover-book" aria-hidden="true">
@@ -181,6 +189,37 @@
                 <filter id="ink-brush" x="-20%" y="-60%" width="140%" height="220%">
                   <feTurbulence type="fractalNoise" baseFrequency="0.05 0.4" numOctaves="2" seed="6" result="noise" />
                   <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G" />
+                </filter>
+                <!-- Stamped-seal texture: the first pass roughens the edges so
+                     no line is mechanically straight, the second turns noise
+                     into an alpha mask that lifts small patches of ink out of
+                     the impression. Tuned for the size the seal actually
+                     renders at on the title slip — roughly 28px — where the
+                     strokes are only a couple of pixels wide, so the
+                     displacement stays gentle and the gaps stay sparse. A
+                     pressed seal is uneven, not shredded, and 弈 has to stay
+                     readable. -->
+                <filter id="seal-ink" x="-30%" y="-30%" width="160%" height="160%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="17" result="edge" />
+                  <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="edge"
+                    scale="1.1"
+                    xChannelSelector="R"
+                    yChannelSelector="G"
+                    result="rough"
+                  />
+                  <feTurbulence type="fractalNoise" baseFrequency="0.22" numOctaves="2" seed="5" result="mottle" />
+                  <feColorMatrix
+                    in="mottle"
+                    type="matrix"
+                    values="0 0 0 0 0
+                            0 0 0 0 0
+                            0 0 0 0 0
+                            1.6 0 0 0 -0.12"
+                    result="gaps"
+                  />
+                  <feComposite in="rough" in2="gaps" operator="in" />
                 </filter>
               </defs>
               <rect class="cover-book-spine" x="0" y="0" width="34" height="420" />
@@ -218,6 +257,17 @@
             </svg>
             <span class="cover-book-label">
               <span class="cover-book-label-text">围棋入门</span>
+              <!-- The collector's seal belongs to the title slip, not to the
+                   cloth: printed below 门 on the same piece of paper, so it
+                   stays with the title at every viewport. Set a little off
+                   square, the way a hand-pressed seal never quite lands
+                   straight. 弈 — to play (a game of Go). -->
+              <svg class="cover-seal" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
+                <g transform="rotate(-2.5 23 23)">
+                  <path class="cover-seal-border" d="M 2.6 2.2 L 43.4 3.1 L 42.8 43.8 L 2.1 42.6 Z" />
+                  <text class="cover-seal-glyph" x="23" y="24">弈</text>
+                </g>
+              </svg>
             </span>
           </span>
         </a>

@@ -147,6 +147,30 @@ describe("Contents pages' bottom-corner page-turn controls", () => {
   });
 });
 
+// Contents used to stamp a tick beside chapters finished in this browser.
+// It read as decoration nobody could explain, so the list is now plain: the
+// completion state is still recorded, it just isn't drawn here. These guard
+// against it creeping back in as markup, styling, or a stray import.
+describe("Contents carries no completion marks", () => {
+  for (const name of ["contents.html", "contents-2.html"]) {
+    const page = pages.find((candidate) => candidate.name === name);
+
+    it(`${name} renders no tick glyph or completion element`, () => {
+      expect(page!.doc.body.textContent ?? "").not.toMatch(/[✓✔☑√]/);
+      expect(page!.doc.querySelectorAll("[data-status-for], .chapter-done, .lesson-status")).toHaveLength(0);
+    });
+
+    it(`${name} doesn't read completion state at all`, () => {
+      const bundle = mountedModuleSource(page!.doc, page!.path);
+      expect(bundle).not.toMatch(/isChapterComplete/);
+    });
+
+    it(`${name} still lists its chapters as links`, () => {
+      expect(page!.doc.querySelectorAll(".contents-list a").length).toBeGreaterThan(0);
+    });
+  }
+});
+
 describe("returning to Contents always lands on page 1", () => {
   for (const { name, doc } of pages) {
     if (name === "index.html") continue; // the cover has no header nav back to Contents
