@@ -87,6 +87,10 @@ function activeCount(doc: Document): number {
   return doc.querySelectorAll("circle.go-board-point-active").length;
 }
 
+function tabStopCount(doc: Document): number {
+  return doc.querySelectorAll('circle.go-board-point-active[tabindex="0"]').length;
+}
+
 function disabled(doc: Document, id: string): boolean {
   return doc.querySelector<HTMLButtonElement>(`#${id}`)?.disabled ?? false;
 }
@@ -106,6 +110,13 @@ describe("the free-play board", () => {
     expect(BOARD_SIZE).toBe(19);
     expect(doc.querySelectorAll("circle.go-board-point")).toHaveLength(361);
     expect(activeCount(doc)).toBe(361);
+  });
+
+  it("keeps the board to one normal Tab stop instead of one per intersection", () => {
+    const { doc } = setUp();
+    expect(activeCount(doc)).toBe(361);
+    expect(tabStopCount(doc)).toBe(1);
+    expect(doc.querySelectorAll('circle.go-board-point-active[tabindex="-1"]')).toHaveLength(360);
   });
 
   it("opens with the human to move as Black", () => {
@@ -134,6 +145,7 @@ describe("taking turns", () => {
     expect(stones(doc, "white")).toBe(1);
     expect(status(doc)).toContain("you are Black");
     expect(activeCount(doc)).toBe(359);
+    expect(tabStopCount(doc)).toBe(1);
   });
 
   it("ignores clicks that arrive while the opponent is still thinking", () => {

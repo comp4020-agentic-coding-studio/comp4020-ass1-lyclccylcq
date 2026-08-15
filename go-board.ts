@@ -37,19 +37,38 @@ export interface RenderOptions {
    * dot is drawn here so every board in the book marks it identically.
    * Ignored if the point is empty. */
   lastMove?: Point | null;
+  /** "all" gives every interactive point a Tab stop. "roving" keeps one Tab
+   * stop on the board and lets arrow keys move it between interactive points. */
+  keyboardNavigation?: "all" | "roving";
   onPointActivate?: (point: Point) => void;
 }
 
 export function renderGoBoard(container: HTMLElement, options: RenderOptions): void {
-  const { board, highlights = [], interactive = [], markers = [], lastMove = null, onPointActivate } = options;
+  const {
+    board,
+    highlights = [],
+    interactive = [],
+    markers = [],
+    lastMove = null,
+    keyboardNavigation = "all",
+    onPointActivate,
+  } = options;
   const size = board.size;
   const last = size - 1;
   const interactiveSet = new Set(interactive.map(pointKey));
   const highlightSet = new Set(highlights.map(pointKey));
   const markerMap = new Map(markers.map((marker) => [pointKey(marker.point), marker]));
+  const rovingFocusKey =
+    keyboardNavigation === "roving" && interactive.length > 0
+      ? interactiveSet.has(container.dataset.goBoardRovingFocus ?? "")
+        ? (container.dataset.goBoardRovingFocus as string)
+        : pointKey(interactive[0])
+      : null;
 
   container.innerHTML = "";
   container.classList.add("go-board");
+  if (rovingFocusKey) container.dataset.goBoardRovingFocus = rovingFocusKey;
+  else delete container.dataset.goBoardRovingFocus;
 
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `-0.5 -0.5 ${size} ${size}`);
@@ -77,7 +96,15 @@ export function renderGoBoard(container: HTMLElement, options: RenderOptions): v
       const stone = board.cells[row][col];
       const marker = markerMap.get(pointKey(point));
       const isLastMove = !!stone && !!lastMove && lastMove.row === row && lastMove.col === col;
-      svg.appendChild(pointCircle(point, stone, interactiveSet, marker, isLastMove, onPointActivate));
+      svg.appendChild(
+        pointCircle(point, stone, interactiveSet, marker, isLastMove, {
+          keyboardNavigation,
+          rovingFocusKey,
+          onRovingFocus: (point) => setRovingFocus(container, svg, point),
+          onRovingMove: (from, key) => moveRovingFocus(container, svg, board, interactiveSet, from, key),
+          onPointActivate,
+        }),
+      );
       if (marker) svg.appendChild(markerShape(col, row, marker));
       if (isLastMove) {
         // Contrasts against the stone it sits on, so it reads at a glance on
@@ -102,8 +129,15 @@ function pointCircle(
   interactiveSet: Set<string>,
   marker: PointMarker | undefined,
   isLastMove: boolean,
-  onPointActivate?: (point: Point) => void,
+  controls: {
+    keyboardNavigation: "all" | "roving";
+    rovingFocusKey: string | null;
+    onRovingFocus: (point: Point) => void;
+    onRovingMove: (from: Point, key: string) => void;
+    onPointActivate?: (point: Point) => void;
+  },
 ): SVGCircleElement {
+  const { keyboardNavigation, rovingFocusKey, onRovingFocus, onRovingMove, onPointActivate } = controls;
   const circle = document.createElementNS(SVG_NS, "circle");
   circle.setAttribute("cx", String(point.col));
   circle.setAttribute("cy", String(point.row));
@@ -116,10 +150,21 @@ function pointCircle(
   if (canActivate && onPointActivate) {
     circle.classList.add("go-board-point-active");
     circle.setAttribute("role", "button");
-    circle.setAttribute("tabindex", "0");
+    circle.setAttribute("tabindex", keyboardNavigation === "roving" && pointKey(point) !== rovingFocusKey ? "-1" : "0");
     const activate = (): void => onPointActivate(point);
+    circle.addEventListener("focus", () => {
+      if (keyboardNavigation === "roving") onRovingFocus(point);
+    });
     circle.addEventListener("click", activate);
     circle.addEventListener("keydown", (event) => {
+      if (
+        keyboardNavigation === "roving" &&
+        ["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(event.key)
+      ) {
+        event.preventDefault();
+        onRovingMove(point, event.key);
+        return;
+      }
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         activate();
@@ -128,6 +173,48 @@ function pointCircle(
   }
 
   return circle;
+}
+
+function moveRovingFocus(
+  container: HTMLElement,
+  svg: SVGSVGElement,
+  board: Board,
+  interactiveSet: Set<string>,
+  from: Point,
+  key: string,
+): void {
+  const deltas: Record<string, Point> = {
+    ArrowUp: { row: -1, col: 0 },
+    ArrowRight: { row: 0, col: 1 },
+    ArrowDown: { row: 1, col: 0 },
+    ArrowLeft: { row: 0, col: -1 },
+  };
+  const delta = deltas[key];
+  if (!delta) return;
+
+  for (
+    let next: Point = { row: from.row + delta.row, col: from.col + delta.col };
+    next.row >= 0 && next.row < board.size && next.col >= 0 && next.col < board.size;
+    next = { row: next.row + delta.row, col: next.col + delta.col }
+  ) {
+    if (!interactiveSet.has(pointKey(next))) continue;
+    const nextEl = pointElement(svg, next);
+    setRovingFocus(container, svg, next);
+    nextEl?.focus();
+    return;
+  }
+}
+
+function setRovingFocus(container: HTMLElement, svg: SVGSVGElement, point: Point): void {
+  for (const active of svg.querySelectorAll<SVGCircleElement>("circle.go-board-point-active")) {
+    active.setAttribute("tabindex", "-1");
+  }
+  pointElement(svg, point)?.setAttribute("tabindex", "0");
+  container.dataset.goBoardRovingFocus = pointKey(point);
+}
+
+function pointElement(svg: SVGSVGElement, point: Point): SVGCircleElement | null {
+  return svg.querySelector<SVGCircleElement>(`circle.go-board-point[cx="${point.col}"][cy="${point.row}"]`);
 }
 
 function gridLine(x1: number, y1: number, x2: number, y2: number): SVGLineElement {

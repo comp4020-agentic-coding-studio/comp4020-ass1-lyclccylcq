@@ -82,6 +82,34 @@ describe("rendering at 19x19", () => {
       ?.dispatchEvent(new (doc.defaultView as Window & typeof globalThis).Event("click", { bubbles: true }));
     expect(activated).toEqual([[18, 18]]);
   });
+
+  it("can keep a 19x19 board to one Tab stop while arrow keys move the active keyboard point", () => {
+    const { doc, container } = setUp();
+    const activated: Array<[number, number]> = [];
+    renderGoBoard(container, {
+      board: createBoard(19),
+      interactive: [
+        { row: 0, col: 0 },
+        { row: 0, col: 1 },
+        { row: 1, col: 1 },
+      ],
+      keyboardNavigation: "roving",
+      onPointActivate: ({ row, col }) => activated.push([row, col]),
+    });
+
+    const first = doc.querySelector<SVGCircleElement>('circle.go-board-point[cx="0"][cy="0"]');
+    const second = doc.querySelector<SVGCircleElement>('circle.go-board-point[cx="1"][cy="0"]');
+    expect(doc.querySelectorAll('circle.go-board-point-active[tabindex="0"]')).toHaveLength(1);
+    expect(first?.getAttribute("tabindex")).toBe("0");
+    expect(second?.getAttribute("tabindex")).toBe("-1");
+
+    first?.dispatchEvent(new doc.defaultView!.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    expect(first?.getAttribute("tabindex")).toBe("-1");
+    expect(second?.getAttribute("tabindex")).toBe("0");
+
+    second?.dispatchEvent(new doc.defaultView!.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(activated).toEqual([[0, 1]]);
+  });
 });
 
 // The last-move dot is drawn here rather than by each lesson, so these are

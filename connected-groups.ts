@@ -1,9 +1,8 @@
 // Bootstraps Lesson 3: three sequential capture examples that all run the
 // same interaction. Click any black stone to select its connected group and
-// see its shared liberties, then click any empty point to place white —
-// go-rules.ts alone decides whether that's legal and whether it captures.
-// There is no separate "allowed points" list: every empty point stays
-// clickable, and an illegal click just leaves the board exactly as it was.
+// see its shared liberties, then play white on those liberties. go-rules.ts
+// still decides Go legality; this controller only decides whether a legal move
+// is relevant to the current exercise.
 
 import { notifyMoveResult } from "./audio";
 import { renderGoBoard } from "./go-board";
@@ -69,6 +68,10 @@ function illegalMoveFeedback(reason: "occupied" | "off-board" | "suicide" | "ko"
   if (reason === "occupied") return "That point already has a stone on it.";
   if (reason === "ko") return "That move would repeat the previous position.";
   return "That point isn't on the board.";
+}
+
+function samePoint(a: Point, b: Point): boolean {
+  return a.row === b.row && a.col === b.col;
 }
 
 /** Wires up one Lesson 3 run against the given elements. Exported (rather
@@ -139,13 +142,25 @@ export function mount(elements: LessonElements): void {
 
   // A click is either a group inspection or a move attempt, never both: a
   // black stone selects (and returns before touching placeStone), anything
-  // else — empty or white — is a move attempt that either lands or is
-  // rejected without altering board or selected.
+  // else is first checked for exercise relevance, then handed to the shared
+  // rules engine for actual Go legality.
   function handleActivate(point: Point): void {
     const stone = getStone(board, point);
     if (stone === "black") {
       selected = point;
       render();
+      return;
+    }
+
+    if (!selected) {
+      setFeedback("Select the group before placing White stones.");
+      return;
+    }
+
+    const group = getGroup(board, selected);
+    const liberties = getLiberties(board, group);
+    if (!liberties.some((liberty) => samePoint(liberty, point))) {
+      setFeedback("Play on one of this group's liberties.");
       return;
     }
 

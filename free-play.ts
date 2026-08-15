@@ -123,6 +123,7 @@ export function mount(elements: FreePlayElements, options: FreePlayOptions = {})
       board,
       interactive: humanCanMove() ? emptyPoints() : [],
       lastMove,
+      keyboardNavigation: "roving",
       onPointActivate: (point) => handleHumanMove(point),
     });
 

@@ -53,6 +53,12 @@ function isBlack(doc: Document, row: number, col: number): boolean {
   ) ?? false;
 }
 
+function isWhite(doc: Document, row: number, col: number): boolean {
+  return doc.querySelector(`circle.go-board-point[cx="${col}"][cy="${row}"]`)?.classList.contains(
+    "go-board-point-white",
+  ) ?? false;
+}
+
 // Example 1's group sits at (4,4)-(4,5); their combined liberties.
 const EXAMPLE_1_LIBERTIES: Array<[number, number]> = [
   [3, 4],
@@ -93,16 +99,14 @@ describe("Lesson 3: inspecting a group", () => {
     expect(doc.querySelectorAll(".go-board-highlight")).toHaveLength(0);
   });
 
-  it("clicking an empty point places a move directly, without ever creating a group selection", () => {
+  it("clicking an empty point before selecting a group does not place a move", () => {
     const { doc, window } = setUp();
     const [row, col] = EXAMPLE_1_LIBERTIES[0];
     click(doc, window, row, col); // empty point, no group selected first
 
-    expect(feedback(doc)).toBe("Select the group to see its liberties.");
+    expect(feedback(doc)).toBe("Select the group before placing White stones.");
     expect(doc.querySelectorAll(".go-board-highlight")).toHaveLength(0);
-    expect(doc.querySelector(`circle.go-board-point[cx="${col}"][cy="${row}"]`)?.classList.contains(
-      "go-board-point-white",
-    )).toBe(true);
+    expect(isWhite(doc, row, col)).toBe(false);
   });
 });
 
@@ -117,6 +121,18 @@ describe("Lesson 3: surrounding and capturing a group", () => {
 
     click(doc, window, ...EXAMPLE_1_LIBERTIES[1]);
     expect(feedback(doc)).toBe("4 liberties remaining.");
+  });
+
+  it("rejects unrelated legal moves that do not close the selected group's liberties", () => {
+    const { doc, window } = setUp();
+    click(doc, window, 4, 4); // select the group
+    expect(feedback(doc)).toBe("6 liberties remaining.");
+
+    click(doc, window, 0, 0); // legal Go move, irrelevant to this exercise
+
+    expect(feedback(doc)).toBe("Play on one of this group's liberties.");
+    expect(isWhite(doc, 0, 0)).toBe(false);
+    expect(feedback(doc)).not.toContain("5 liberties");
   });
 
   it("captures the whole group on the final liberty and reveals Next example", () => {
@@ -220,19 +236,18 @@ describe("Lesson 3: state stays clean across a capture", () => {
     expect(board?.querySelectorAll("circle").length).toBe(167);
   });
 
-  it("a legal move on a freshly emptied point (in the next example) places a normal stone, nothing more", () => {
+  it("a freshly emptied point stays visually plain but is not accepted when irrelevant to the next group", () => {
     const { doc, window } = setUp();
     click(doc, window, 4, 4);
     for (const [row, col] of EXAMPLE_1_LIBERTIES) click(doc, window, row, col);
     nextButton(doc).click(); // example 2's board is unrelated to example 1's now-empty points
 
     expect(isBlack(doc, 4, 4)).toBe(false);
+    click(doc, window, 1, 1); // select example 2's group
     click(doc, window, 4, 4); // same coordinate example 1's group used to occupy
-    expect(feedback(doc)).toBe("Select the group to see its liberties.");
-    expect(doc.querySelector('circle.go-board-point[cx="4"][cy="4"]')?.classList.contains("go-board-point-white")).toBe(
-      true,
-    );
-    expect(doc.querySelectorAll(".go-board-highlight")).toHaveLength(0);
+    expect(feedback(doc)).toBe("Play on one of this group's liberties.");
+    expect(isWhite(doc, 4, 4)).toBe(false);
+    expect(doc.querySelector('circle.go-board-highlight[cx="4"][cy="4"]')).toBeNull();
   });
 });
 
