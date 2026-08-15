@@ -160,3 +160,91 @@ catching you out, a fact about the stack the agent keeps getting wrong --- write
 it down here. Growing this file is the work of harness engineering, and the gap
 between this boilerplate and your own version is part of what your prototype
 says about the developer you're becoming.
+
+# Assignment 1 Project Guardrails
+
+Added late in Assignment 1, formalised from real regressions in this repo's
+history (citations in `PROCESS.md`), not present from the start.
+
+## 1. Lesson architecture
+
+Lessons are additive: a new `LessonDefinition` (`lesson.ts`: `id`, `title`,
+`createInitialBoard`, `isComplete?`) and its own file, never a rewrite of
+another lesson's file, id, or initial board. Adding or renumbering a lesson
+means updating `book-manifest.ts` and re-verifying `book-manifest.test.ts` /
+`book-nav.test.ts` / `lessons.test.ts`, not just the visible page.
+
+## 2. Shared Go rules engine is the single legality authority
+
+Every real move --- scripted lesson moves, Free Play, Practice Bot --- goes
+through `go-rules.ts`'s `placeStone`; nothing re-implements legality locally.
+Never fake legality by hiding/disabling a coordinate in the UI or hard-coding
+an "allowed move" list. Captures resolve before the suicide check. Occupied-
+point, suicide, and ko stay shared engine behaviour, never lesson-local.
+
+## 3. Rules/UI separation
+
+`go-rules.ts`/`go-scoring.ts` stay pure --- no DOM/audio/visual side effects,
+just semantic outcomes/state. Rendering, sound, feedback, and lesson/bot
+strategy live in the controller layer and only ever ask the engine whether a
+move is legal; they never decide legality themselves.
+
+## 4. Regression-first
+
+A bug that recurred, could recur silently, or breaks a project contract gets a
+named regression test before the fix counts as done, where practical. Prefer
+behavioural tests over decorative/pixel tests.
+
+## 5. Board UI integrity
+
+No X marks, blocker images, or overlays faking an illegal point --- it stays
+an ordinary intersection, and a rejected move leaves the board unchanged.
+Clear/recompute stale selection and highlight state after a capture; a
+captured point is a plain empty intersection, legally replayable. Last-move
+markers update only after a successful move.
+
+## 6. Teaching interaction
+
+Don't reveal the answer before the learner attempts it, unless a lesson is
+explicitly teaching that exact location. Prefer
+inspect → attempt → consequence → explanation over
+explanation → highlighted answer → click it. Wrong-but-legal attempts get
+feedback and a retry, not an answer reveal.
+
+## 7. Book/navigation
+
+`book-manifest.ts`'s `BOOK_PAGES` is the sole source of page order ---
+Previous/Next derives from it, never hand-duplicated per page. Contents Page 1
+and Page 2 stay distinct, reachable pages. A new chapter/page updates
+`book-manifest.test.ts` / `book-nav.test.ts` / `spec/contents-pages.test.ts`.
+
+## 8. Board-size contract
+
+Lessons: 9×9. Free Play: 19×19. Home/tabletop decorative board: 16×16 artwork
+only, never wired to gameplay dimensions. The engine itself is size-generic.
+
+## 9. Audio
+
+Placement sound only on a successful legal move; capture sound only when
+stones are actually removed; illegal moves stay silent. Respect the shared
+mute state; don't add per-lesson sound logic the shared move-outcome path
+already covers.
+
+## 10. Acceptance checklist
+
+Before calling a milestone complete: run the relevant tests, `pnpm check`, and
+a production build; review `git status`; manually verify the primary
+interaction for visual/interactive changes. For UI work, verify both
+1920×1080 and 390×844 --- overflow, resize, keyboard access, nothing hover-
+only. Report known limitations rather than hiding them. Don't commit unless
+explicitly asked. (No automated responsive/accessibility coverage exists
+beyond the starter's `spec/invariants.test.ts` --- this checklist is manual
+until that changes.)
+
+## 11. General discipline
+
+Preserve working behaviour during visual redesigns; no unrelated changes; no
+new dependencies without justification. Prefer the smallest reusable/root-
+cause fix over a one-page workaround, and a simple stable interaction over
+over-engineered animation. Recover previously-approved behaviour from Git
+history rather than recreating it from memory.
